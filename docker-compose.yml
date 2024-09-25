@@ -5,9 +5,9 @@ services:
     build:
       context: ./webapp
     ports:
-      - "8080:8080"
+      - "4444:4444"
     volumes:
       - ./webapp/public:/app/public
     environment:
-      - PORT=8080
+      - PORT=4444
 

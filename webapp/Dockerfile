@@ -26,7 +26,7 @@ COPY --from=build /app/main ./
 COPY public ./public
 
 # Expose the port the app will run on
-EXPOSE 8080
+EXPOSE 4444
 
 # Run the Go binary
 CMD ["./main"]
