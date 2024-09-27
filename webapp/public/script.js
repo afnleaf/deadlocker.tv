@@ -218,10 +218,10 @@ const chart1 = new Chart(ctx1, {
         maintainAspectRatio: false,
         layout: {
             padding: {
-                top: 10,
-                bottom: 10,
-                right: 10,
-                left: 10
+                top: 2,
+                bottom: 2,
+                right: 2,
+                left: 2
             }
         },
         interaction: {
@@ -234,8 +234,12 @@ const chart1 = new Chart(ctx1, {
                 display: true,
                 title: {
                     display: true,
-                    text: 'Time (minutes)'
-
+                    text: 'Time (minutes)',
+                    font: {
+                        size: 16,
+                        style: 'normal',
+                        weight: 'bold'
+                    }
                 },
                 grid: {
                     color: '#B7AA9340',
@@ -246,7 +250,13 @@ const chart1 = new Chart(ctx1, {
                 display: true,
                 title: {
                     display: true,
-                    text: 'Souls'
+                    text: 'Souls',
+                    font: {
+                        size: 16,
+                        style: 'normal',
+                        weight: 'bold'
+                    }
+
                 },
                 grid: {
                     color: '#B7AA9340',
@@ -288,6 +298,11 @@ const chart1 = new Chart(ctx1, {
                 labels: {
                     boxWidth: 10,
                     boxHeight: 10,
+                    font: {
+                        size: 14,
+                        style: 'normal',
+                        weight: 'bold',
+                    }
                 }
             }
         }
@@ -317,10 +332,10 @@ const chart2 = new Chart(ctx2, {
         maintainAspectRatio: false,
         layout: {
             padding: {
-                top: 10,
-                bottom: 10,
-                right: 10,
-                left: 10
+                top: 2,
+                bottom: 2,
+                right: 2,
+                left: 2
             }
         },
         interaction: {
@@ -333,8 +348,12 @@ const chart2 = new Chart(ctx2, {
                 display: true,
                 title: {
                     display: true,
-                    text: 'Time (minutes)'
-
+                    text: 'Time (minutes)',
+                    font: {
+                        size: 16,
+                        style: 'normal',
+                        weight: 'bold'
+                    }
                 },
                 grid: {
                     color: '#B7AA9340',
@@ -345,7 +364,12 @@ const chart2 = new Chart(ctx2, {
                 display: true,
                 title: {
                     display: true,
-                    text: 'Souls/HP'
+                    text: 'Souls/HP',
+                    font: {
+                        size: 16,
+                        style: 'normal',
+                        weight: 'bold'
+                    }
                 },
                 grid: {
                     color: '#B7AA9340',
@@ -386,6 +410,11 @@ const chart2 = new Chart(ctx2, {
                 labels: {
                     boxWidth: 10,
                     boxHeight: 10,
+                    font: {
+                        size: 14,
+                        style: 'normal',
+                        weight: 'bold',
+                    }
                 }
             }
         }
