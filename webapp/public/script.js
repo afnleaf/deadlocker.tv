@@ -1,4 +1,7 @@
 // script.js
+const h = window.visualViewport.height;
+const w = window.visualViewport.width;
+
 
 //let x represent 1 minute of time or 60s
 // unit base value
@@ -214,7 +217,7 @@ const chart1 = new Chart(ctx1, {
     },
     options: {
         responsive: true,
-        aspectRatio: 2,
+        //aspectRatio: w/h,
         maintainAspectRatio: false,
         layout: {
             padding: {
@@ -328,7 +331,7 @@ const chart2 = new Chart(ctx2, {
     },
     options: {
         responsive: true,
-        aspectRatio: 2,
+        //aspectRatio: w/h,
         maintainAspectRatio: false,
         layout: {
             padding: {
@@ -420,4 +423,22 @@ const chart2 = new Chart(ctx2, {
         }
     }
 });
+
+function resizeChart() { 
+    const scrollbarH = window.innerWidth - document.documentElement.cientWidth;
+    const w = `${window.innerWidth - scrollbarH}px`;
+    const h = `${window.innerHeight - 20}px`
+    const c1 = document.getElementById("chart1");
+    const c2 = document.getElementById("chart2");
+    c1.style.width = w; 
+    c1.style.height = h 
+    c2.style.width = w; 
+    c2.style.height = h 
+    chart1.resize();
+    chart2.resize();
+}
+
+resizeChart();
+
+window.addEventListener('resize', () => resizeChart());
 

@@ -19,18 +19,14 @@ body {
     color: var(--khaki);
 }
 
-#chart-container {
+.chart-container {
     width: 100%;
-    margin: 1px auto;
+    height: 100%;
+    margin: 5px auto;
     align: center;
     background-color: var(--night);
     padding: 0px;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-canvas {
-    width: 100%;
-    margin-bottom: 2px;
 }
 
