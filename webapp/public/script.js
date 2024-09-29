@@ -11,10 +11,10 @@ const sinners_base = 300;
 // unit scale
 const trooper_scale0 = 1.0; 
 const trooper_scale10 = 2.0;
-const sjungle_scale = 0.5;
-const mjungle_scale = 1.0;
+const sjungle_scale = 0.528;
+const mjungle_scale = 1.06;
 const ljungle_scale = 2.64;
-const sinners_scale = 3.0;
+const sinners_scale = 3.96;
 // base value objectives
 const guardians_base = 125;
 const guardians_orbs = 150;
