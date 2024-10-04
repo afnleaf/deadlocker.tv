@@ -184,10 +184,10 @@ function addIcon(iconType) {
     icon.style.width = '40px';
     icon.style.height = '40px';
     icon.style.cursor = 'grab';
-
     icon.addEventListener('mousedown', startDragging);
     iconLayer.appendChild(icon);
     icons.push(icon);
+    switchToMoveMode();
 }
 
 function startDragging(e) {
