@@ -1,4 +1,4 @@
-// script.js
+// farm.js
 
 //let x represent 1 minute of time or 60s
 // unit base value

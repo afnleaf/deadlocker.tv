@@ -1,3 +1,5 @@
+/* styles.css */
+
 :root {
     --night: #151612ff;
     --night-2: #090D0Dff;
@@ -7,9 +9,13 @@
     --raisin-black: #2D2623; 
     --dutch-white: #EBDBBFff;
     --kobicha: #643B28ff;
+    --blue: #007bff;
 }
 
 body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -30,3 +36,99 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
+.map-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas-container {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#mapLayer, #iconLayer, #drawingLayer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--dutch-white);
+}
+
+#mapLayer {
+    z-index: 1;
+}
+
+#iconLayer {
+    z-index: 2;
+    pointer-events: none;
+}
+
+#drawingLayer {
+    z-index: 3;
+}
+
+.draggable-icon {
+    pointer-events: auto;
+}
+
+.draggable-icon:active {
+    cursor: grabbing !important;
+}
+
+#controls {
+    margin: 20px auto;
+    padding: 10px 10px 10px 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--khaki);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#controls > div {
+    margin: 5px;
+}
+
+.mode-button {
+    cursor: pointer;
+}
+/*
+.mode-button.active {
+    
+}
+*/
+select, button {
+    background-color: var(--smoky-black);
+    color: var(--khaki);
+    border: 1px solid var(--kobicha);
+    padding: 5px;
+    border-radius: 4px;
+}
+
+button {
+    cursor: pointer;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-out;
+}
+
+button:hover {
+    background-color: var(--smoky-black-2);
+}
+
+button:active {
+    background-color: var(--kobicha);
+    color: var(--dutch-white);
+}
+
+button.active {
+    background-color: var(--kobicha);
+    color: var(--dutch-white);
+}

@@ -1,9 +1,14 @@
+# Dockerfile
+
 # # # # # # # # # # # # # # # # # # # # # # # # # #
 # 1: building the go app
 FROM golang:1.23-alpine AS build
 
 # install git and build tools
 RUN apk add --no-cache git build-base
+
+# templ install
+RUN go install github.com/a-h/templ/cmd/templ@latest
 
 # set the workdir within the container
 WORKDIR /app
@@ -15,8 +20,6 @@ RUN go mod download && go mod tidy
 # copy the code
 COPY . .
 
-# templ install
-RUN go install github.com/a-h/templ/cmd/templ@latest
 
 # generate Go code from templ files and clean up
 RUN templ generate && go mod tidy
