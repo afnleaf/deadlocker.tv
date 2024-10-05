@@ -1,18 +1,27 @@
 // map.js
 
+// content variables
 const container = document.querySelector('.canvas-container');
 const mapLayer = document.getElementById('mapLayer');
-const mapCtx = mapLayer.getContext('2d');
+const iconLayer = document.getElementById('iconLayer');
 const drawingLayer = document.getElementById('drawingLayer');
+const mapCtx = mapLayer.getContext('2d');
 const drawCtx = drawingLayer.getContext('2d');
 const bgImage = new Image();
-const iconLayer = document.getElementById('iconLayer');
 let paths = [];
 let currentPath = null;
 let icons = [];
 let draggedIcon = null;
 let isDragging = false;
 let currentMode = 'pen';
+// drawing variables
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+let lineWidth = 5;
+let lineColor = "#FFFFFF";
+let isEraser = false;
+let penType = "opaque";
 
 bgImage.onload = () => {
     resizeCanvas();
@@ -58,29 +67,24 @@ function drawBackground() {
 }
 
 function switchToPenMode() {
-    currentMode = 'pen';
-    document.getElementById('penMode').classList.add('active');
-    document.getElementById('moveMode').classList.remove('active');
-    drawingLayer.style.pointerEvents = 'auto';
-    iconLayer.style.pointerEvents = 'none';
+    if(currentMode !== 'pen') { 
+        currentMode = 'pen';
+        document.getElementById('penMode').classList.add('active');
+        document.getElementById('moveMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'auto';
+        iconLayer.style.pointerEvents = 'none';
+    }
 }
 
 function switchToMoveMode() {
-    currentMode = 'move';
-    document.getElementById('moveMode').classList.add('active');
-    document.getElementById('penMode').classList.remove('active');
-    drawingLayer.style.pointerEvents = 'none';
-    iconLayer.style.pointerEvents = 'auto';
+    if(currentMode !== 'move') {
+        currentMode = 'move';
+        document.getElementById('moveMode').classList.add('active');
+        document.getElementById('penMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'auto';
+    }
 }
-
-// drawing variables
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-let lineWidth = 5;
-let lineColor = "#00FFFF";
-let isEraser = false;
-let penType = "opaque";
 
 function draw(e) {
     if (!isDrawing || currentMode !== 'pen') return;
@@ -128,8 +132,8 @@ function getMousePos(canvas, evt) {
 }
 
 function eraseAtPoint(x, y) {
-    //const eraserRadius = lineWidth / (2 * drawingLayer.width);
-    const eraserRadius = 1 / (2 * drawingLayer.width); 
+    const eraserRadius = lineWidth / (2 * drawingLayer.width);
+    //const eraserRadius = 1 / (2 * drawingLayer.width); 
     paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
     redrawCanvas();
 }
@@ -142,12 +146,42 @@ function isPathNearPoint(path, x, y, radius) {
     });
 }
 
+// x1y1/x2y2 are the start/end of the line, pxpy is the point eraser is at
 function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
-    const lineLength = Math.sqrt(((x2 - x1)**2) + ((y2 - y1)**2));
-    const distance = Math.abs((x2 - x1) * (y1 - py) - (x1 - px) * (y2 - y1)) / lineLength;
-    return distance < radius;
+    // vectors
+    // (A,B) is from start of line to point
+    // (C,D) is from end of line to point
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+    // dot product and squared length of the vectors
+    const dot = (A * C) + (B * D);
+    const len_sq = (C * C) + (D * D);
+    // projection parameters
+    // find where along the line segment the closest point lies, assign to xx,yy
+    let param = -1;
+    if(len_sq != 0) {
+        param = dot / len_sq;
+    }
+    let xx, yy;
+    if(param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if(param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+    // calculate distance between eraser point and closest point
+    const dx = px - xx;
+    const dy = py - yy;
+    const distance = Math.sqrt((dx * dx) + (dy * dy));
+    // compare that distance to the radius of our eraser
+    return distance <= radius;
 }
-
 
 function redrawCanvas() {
     drawCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
@@ -199,12 +233,6 @@ function startDragging(e) {
     draggedIcon.dataset.offsetX = e.clientX - rect.left - draggedIcon.offsetLeft;
     draggedIcon.dataset.offsetY = e.clientY - rect.top - draggedIcon.offsetTop;
     draggedIcon.style.cursor = 'grabbing';
-    /*
-    const offsetX = e.clientX - rect.left - draggedIcon.offsetLeft;
-    const offsetY = e.clientY - rect.top - draggedIcon.offsetTop;
-    draggedIcon.dataset.offsetX = offsetX;
-    draggedIcon.dataset.offsetY = offsetY;
-    */
 }
 
 function stopDragging() {
@@ -225,15 +253,6 @@ function drag(e) {
     newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
     draggedIcon.style.left = `${newX}px`;
     draggedIcon.style.top = `${newY}px`;
-    /*
-    const x = e.clientX - rect.left - parseInt(draggedIcon.offsetLeft);
-    const y = e.clientY - rect.top - parseInt(draggedIcon.offsetTop);
-    //maybe constrain icon to icon layer size?
-    x = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    y = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
-    draggedIcon.style.left = `${x}px`;
-    draggedIcon.style.top = `${y}px`;
-    */
 }
 
 // icon drag event listener
@@ -264,7 +283,11 @@ document.addEventListener('DOMContentLoaded', resizeCanvas);
 // control panel event listeners
 document.getElementById('lineWidth').addEventListener('change', (e) => {
     lineWidth = parseInt(e.target.value);
-    isEraser = false;
+    if(isEraser) {
+        isEraser = false;
+        document.getElementById('eraser').classList.remove('active');
+    }
+    switchToPenMode();
 });
 
 document.getElementById('lineColor').addEventListener('change', (e) => {
@@ -273,6 +296,7 @@ document.getElementById('lineColor').addEventListener('change', (e) => {
         isEraser = false;
         document.getElementById('eraser').classList.remove('active');
     }
+    switchToPenMode();
 });
 
 document.getElementById('penType').addEventListener('change', (e) => {
@@ -281,6 +305,7 @@ document.getElementById('penType').addEventListener('change', (e) => {
         isEraser = false;
         document.getElementById('eraser').classList.remove('active');
     }
+    switchToPenMode();
 });
 
 document.getElementById('penMode').addEventListener('click', switchToPenMode);
@@ -303,7 +328,6 @@ clearButton.addEventListener('click', () => {
         paths.pop();
     }
     redrawCanvas();
-
 });
 
 document.getElementById('undo').addEventListener('click', () => {
