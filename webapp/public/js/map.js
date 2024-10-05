@@ -20,7 +20,7 @@ let lastX = 0;
 let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
-let isEraser = false;
+//let isEraser = false;
 let penType = "opaque";
 
 bgImage.onload = () => {
@@ -72,6 +72,19 @@ function switchToPenMode() {
         document.getElementById('penMode').classList.add('active');
         document.getElementById('moveMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'auto';
+        iconLayer.style.pointerEvents = 'none';
+    }
+}
+
+function switchToEraserMode() {
+    if(currentMode !== 'eraser') {
+        currentMode = 'eraser';
+        document.getElementById('eraserMode').classList.add('active');
+        document.getElementById('moveMode').classList.remove('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
     }
@@ -83,6 +96,7 @@ function switchToMoveMode() {
         document.getElementById('moveMode').classList.add('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
@@ -94,6 +108,7 @@ function switchToDelIconMode() {
         document.getElementById('delMode').classList.add('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('moveMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
@@ -103,32 +118,32 @@ function draw(e) {
     if (!isDrawing || currentMode !== 'pen') return;
     const [x, y] = getMousePos(drawingLayer, e);
     
-    if(!isEraser) {
+    if(currentMode === 'pen') {
         currentPath.points.push({x, y});
         redrawCanvas();
-    } else {
+    } else if(currentMode === 'eraser') {
         eraseAtPoint(x, y);
     }
 }
 
 function startDrawing(e) {
-    if(currentMode !== 'pen') return;
+    if(currentMode !== 'pen' && currentMode !== 'eraser') return;
     isDrawing = true;
     const [x, y] = getMousePos(drawingLayer, e);
-    if(!isEraser) {
+    if(currentMode === 'pen') {
         currentPath = {
             points: [{x, y}], 
             color: lineColor,
             width: lineWidth,
             penType: penType
         };
-    } else {
+    } else if (currentMode === 'eraser'){
         eraseAtPoint(x, y);
     }
 }
 
 function stopDrawing() {
-    if(isDrawing && !isEraser) {
+    if(isDrawing && currentMode !== 'eraser') {
         if(currentPath != null) {
             paths.push(currentPath);
         }
@@ -232,13 +247,13 @@ function addIcon(iconType, side) {
     const icon = document.createElement('img');
     icon.src = `public/images/hero_icons/${iconType}`;
     icon.className = 'draggable-icon';
-    //icon.style.position = 'absolute';
-    //icon.style.left = '100px';
-    //icon.style.top = '100px';
-    icon.style.position = 'relative';
-    icon.style.margin = 'auto'; 
-    icon.style.top = '50%';
-    icon.style.transform = 'translateY(-50%)';
+    icon.style.position = 'absolute';
+    icon.style.left = '100px';
+    icon.style.top = '100px';
+    //icon.style.position = 'relative';
+    //icon.style.margin = 'auto'; 
+    //icon.style.top = '50%';
+    //icon.style.transform = 'translateY(-50%)';
     icon.style.width = '50px';
     icon.style.height = '50px';
     // team style
@@ -250,7 +265,9 @@ function addIcon(iconType, side) {
     //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
     //icon.style.boxShadow = `${icon.style.boxShadow}, inset 0 0 0 2px rgba(255, 255, 255, 0.5)`;
     // add to layer
-    //icon.addEventListener('mousedown', startDragging);
+    icon.addEventListener('mousedown', startDragging);
+    icon.addEventListener('touchstart', startDragging); 
+    /*
     if(currentMode === 'move') {
         //startDragging(e);
         icon.style.cursor = 'grab';
@@ -260,6 +277,7 @@ function addIcon(iconType, side) {
         icon.style.cursor = 'not-allowed';
         icon.addEventListener('mousedown', deleteIcon);
     }
+    */
     iconLayer.appendChild(icon);
     icons.push(icon);
     switchToMoveMode();
@@ -271,8 +289,10 @@ function startDragging(e) {
     isDragging = true;
     draggedIcon = e.target;
     const rect = iconLayer.getBoundingClientRect();
-    draggedIcon.dataset.offsetX = e.clientX - rect.left - draggedIcon.offsetLeft;
-    draggedIcon.dataset.offsetY = e.clientY - rect.top - draggedIcon.offsetTop;
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
+    draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
     draggedIcon.style.cursor = 'grabbing';
 }
 
@@ -286,9 +306,12 @@ function stopDragging() {
 
 function drag(e) {
     if(!isDragging || currentMode !== 'move') return;
+    e.preventDefault();
     const rect = iconLayer.getBoundingClientRect();
-    let newX = e.clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
-    let newY = e.clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
+    let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
     // constrain the icon within the iconLayer
     newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
     newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
@@ -305,7 +328,9 @@ function deleteIcon(e) {
 
 // icon event listeners
 iconLayer.addEventListener('mousemove', drag);
+iconLayer.addEventListener('touchmove', drag)
 document.addEventListener('mouseup', stopDragging);
+document.addEventListener('touchend', stopDragging);
 document.getElementById('addIcon').addEventListener('click', () => {
     const iconSelect = document.getElementById('iconSelect');
     const selectedIcon = iconSelect.value;
@@ -321,12 +346,9 @@ iconLayer.addEventListener('mousedown', (e) => {
         deleteIcon(e);
     }
 });
+
 const deleteButton = document.getElementById('delMode');
 deleteButton.addEventListener('click', () => {
-    if(isEraser) {
-        isEraser = false;
-        document.getElementById('eraser').classList.remove('active');
-    }
     switchToDelIconMode();
 });
 
@@ -347,35 +369,25 @@ document.addEventListener('DOMContentLoaded', resizeCanvas);
 // control panel event listeners
 document.getElementById('lineWidth').addEventListener('change', (e) => {
     lineWidth = parseInt(e.target.value);
-    if(isEraser) {
-        isEraser = false;
-        document.getElementById('eraser').classList.remove('active');
-    }
     switchToPenMode();
 });
 
 document.getElementById('lineColor').addEventListener('change', (e) => {
     lineColor = e.target.value;
-    if(isEraser) {
-        isEraser = false;
-        document.getElementById('eraser').classList.remove('active');
-    }
     switchToPenMode();
 });
 
 document.getElementById('penType').addEventListener('change', (e) => {
     penType = e.target.value;
-    if(isEraser) {
-        isEraser = false;
-        document.getElementById('eraser').classList.remove('active');
-    }
     switchToPenMode();
 });
 
 document.getElementById('penMode').addEventListener('click', switchToPenMode);
 document.getElementById('moveMode').addEventListener('click', switchToMoveMode);
 
-const eraserButton = document.getElementById('eraser');
+const eraserButton = document.getElementById('eraserMode');
+eraserButton.addEventListener('click', switchToEraserMode);
+/*
 eraserButton.addEventListener('click', () => {
     // toggle
     isEraser = !isEraser;
@@ -385,6 +397,7 @@ eraserButton.addEventListener('click', () => {
         eraserButton.classList.remove('active');
     }
 });
+*/
 
 const clearButton = document.getElementById('clear');
 clearButton.addEventListener('click', () => {
