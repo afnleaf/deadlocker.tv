@@ -43,19 +43,27 @@ function resizeCanvas() {
         canvasWidth = containerWidth;
         canvasHeight = canvasWidth / imageAspectRatio;
     }
-
-    [mapLayer, iconLayer, drawingLayer].forEach(layer => {
-        layer.width = canvasWidth;
-        layer.height = canvasHeight;
-        layer.style.width = `${canvasWidth}px`;
-        layer.style.height = `${canvasHeight}px`;
+   
+    // map needs to maintain aspect ratio
+    mapLayer.width = canvasWidth;
+    mapLayer.height = canvasHeight;
+    mapLayer.style.width = `${canvasWidth}px`;
+    mapLayer.style.height = `${canvasHeight}px`;
+    // icon layer and drawing layer we want to fill the window
+    [iconLayer, drawingLayer].forEach(layer => {
+        //layer.width = canvasWidth;
+        //layer.height = canvasHeight;
+        layer.width = containerWidth;
+        layer.height = containerHeight;
+        layer.style.width = `${containerWidth}px`;
+        layer.style.height = `${containerHeight}px`;
     });
 
     icons.forEach(icon => {
         const leftPercent = parseInt(icon.style.left) / parseFloat(iconLayer.style.width);
         const topPercent = parseInt(icon.style.top) / parseFloat(iconLayer.style.height);
-        icon.style.left = `${leftPercent * canvasWidth}px`; 
-        icon.style.top = `${topPercent * canvasHeight}px`;
+        icon.style.left = `${leftPercent * containerWidth}px`; 
+        icon.style.top = `${topPercent * containerHeight}px`;
     });
 
     drawBackground();
@@ -286,6 +294,7 @@ function addIcon(iconType, side) {
 function startDragging(e) {
     if(currentMode !== 'move') return;
     e.preventDefault();
+    e.stopPropagation(); // testing this
     isDragging = true;
     draggedIcon = e.target;
     const rect = iconLayer.getBoundingClientRect();
