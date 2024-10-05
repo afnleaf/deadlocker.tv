@@ -71,6 +71,7 @@ function switchToPenMode() {
         currentMode = 'pen';
         document.getElementById('penMode').classList.add('active');
         document.getElementById('moveMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
     }
@@ -81,6 +82,18 @@ function switchToMoveMode() {
         currentMode = 'move';
         document.getElementById('moveMode').classList.add('active');
         document.getElementById('penMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'auto';
+    }
+}
+
+function switchToDelIconMode() {
+    if(currentMode !== 'del') {
+        currentMode = 'del';
+        document.getElementById('delMode').classList.add('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('moveMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
@@ -219,12 +232,15 @@ function addIcon(iconType, side) {
     const icon = document.createElement('img');
     icon.src = `public/images/hero_icons/${iconType}`;
     icon.className = 'draggable-icon';
-    icon.style.position = 'absolute';
-    icon.style.left = '50px';
-    icon.style.top = '50px';
-    icon.style.width = '60px';
-    icon.style.height = '60px';
-    icon.style.cursor = 'grab';
+    //icon.style.position = 'absolute';
+    //icon.style.left = '100px';
+    //icon.style.top = '100px';
+    icon.style.position = 'relative';
+    icon.style.margin = 'auto'; 
+    icon.style.top = '50%';
+    icon.style.transform = 'translateY(-50%)';
+    icon.style.width = '50px';
+    icon.style.height = '50px';
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -234,7 +250,16 @@ function addIcon(iconType, side) {
     //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
     //icon.style.boxShadow = `${icon.style.boxShadow}, inset 0 0 0 2px rgba(255, 255, 255, 0.5)`;
     // add to layer
-    icon.addEventListener('mousedown', startDragging);
+    //icon.addEventListener('mousedown', startDragging);
+    if(currentMode === 'move') {
+        //startDragging(e);
+        icon.style.cursor = 'grab';
+        icon.addEventListener('mousedown', startDragging);
+    } else if(currentMode === 'del') {
+        //deleteIcon(e);
+        icon.style.cursor = 'not-allowed';
+        icon.addEventListener('mousedown', deleteIcon);
+    }
     iconLayer.appendChild(icon);
     icons.push(icon);
     switchToMoveMode();
@@ -271,6 +296,13 @@ function drag(e) {
     draggedIcon.style.top = `${newY}px`;
 }
 
+function deleteIcon(e) {
+    if(currentMode !== 'del') return;
+    const icon = e.target;
+    icon.remove();
+    icons = icons.filter(i => i !== icon);
+}
+
 // icon event listeners
 iconLayer.addEventListener('mousemove', drag);
 document.addEventListener('mouseup', stopDragging);
@@ -279,10 +311,23 @@ document.getElementById('addIcon').addEventListener('click', () => {
     const selectedIcon = iconSelect.value;
     const sideRadio = document.querySelector('input[name="sideSwitch"]:checked');
     const selectedSide = sideRadio.value;
-
     if(selectedIcon && selectedSide) {
         addIcon(selectedIcon, selectedSide);
     }
+});
+
+iconLayer.addEventListener('mousedown', (e) => {
+    if(currentMode === 'del') {
+        deleteIcon(e);
+    }
+});
+const deleteButton = document.getElementById('delMode');
+deleteButton.addEventListener('click', () => {
+    if(isEraser) {
+        isEraser = false;
+        document.getElementById('eraser').classList.remove('active');
+    }
+    switchToDelIconMode();
 });
 
 // mouse draw event listeners
