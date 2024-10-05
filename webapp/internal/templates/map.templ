@@ -11,10 +11,22 @@ templ Map() {
                 <canvas id="drawingLayer"></canvas>
 		    </div>
             <div id="controls">
-                <div>
-                    <label for="amberSelect">Amber:</label>
-                    <select id="amberSelect">
-                        <option value="">Choose a hero:</option>
+                <div class="control-column">
+                    <div id="sideSelect">
+                        <div class="sideOption">
+                            <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
+                            <label for="amber">Amber</label>
+                        </div>
+                        <div class="sideOption">
+                            <input type="radio" id="sapphire" name="sideSwitch" value="sapphire">
+                            <label for="sapphire">Sapphire</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-column">
+                    <label for="iconSelect">Hero:</label>
+                    <select id="iconSelect">
+                        <!-- <option value="">Choose a hero:</option> -->
                         <option value="Abrams_MM.png">Abrams</option>
                         <option value="Bebop_MM.png">Bebop</option>
                         <option value="Dynamo_MM.png">Dynamo</option>

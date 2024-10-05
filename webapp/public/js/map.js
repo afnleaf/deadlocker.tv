@@ -207,17 +207,33 @@ function redrawCanvas() {
 }
 
 // icon stuff
-
-function addIcon(iconType) {
+// --sapphire: #5F76E3;
+// --amber: #DDB35C;
+function addIcon(iconType, side) {
+    let teamColor = '';
+    if(side === 'amber') {
+        teamColor = 'rgba(221, 179, 92, 1)';
+    } else if(side === 'sapphire') {
+        teamColor = 'rgba(95, 118, 227, 1)'
+    }
     const icon = document.createElement('img');
     icon.src = `public/images/hero_icons/${iconType}`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
     icon.style.left = '50px';
     icon.style.top = '50px';
-    icon.style.width = '40px';
-    icon.style.height = '40px';
+    icon.style.width = '60px';
+    icon.style.height = '60px';
     icon.style.cursor = 'grab';
+    // team style
+    icon.style.borderRadius = '50%';
+    icon.style.display = 'block';
+    //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
+    icon.style.background = teamColor;
+    //icon.style.outline = '2px solid rgba(221, 179, 92, 1)'
+    //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
+    //icon.style.boxShadow = `${icon.style.boxShadow}, inset 0 0 0 2px rgba(255, 255, 255, 0.5)`;
+    // add to layer
     icon.addEventListener('mousedown', startDragging);
     iconLayer.appendChild(icon);
     icons.push(icon);
@@ -255,14 +271,17 @@ function drag(e) {
     draggedIcon.style.top = `${newY}px`;
 }
 
-// icon drag event listener
+// icon event listeners
 iconLayer.addEventListener('mousemove', drag);
 document.addEventListener('mouseup', stopDragging);
 document.getElementById('addIcon').addEventListener('click', () => {
-    const iconSelect = document.getElementById('amberSelect');
+    const iconSelect = document.getElementById('iconSelect');
     const selectedIcon = iconSelect.value;
-    if(selectedIcon) {
-        addIcon(selectedIcon);
+    const sideRadio = document.querySelector('input[name="sideSwitch"]:checked');
+    const selectedSide = sideRadio.value;
+
+    if(selectedIcon && selectedSide) {
+        addIcon(selectedIcon, selectedSide);
     }
 });
 
