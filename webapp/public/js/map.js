@@ -20,8 +20,14 @@ let lastX = 0;
 let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
-//let isEraser = false;
 let penType = "opaque";
+// zoom
+let zoomLevel = 1;
+let mapOffsetX = 0;
+let mapOffsetY = 0;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 5;
+
 
 bgImage.onload = () => {
     resizeCanvas();
@@ -33,9 +39,9 @@ function resizeCanvas() {
     const containerHeight = container.clientHeight;
     const containerAspectRatio = containerWidth / containerHeight;
     const imageAspectRatio = bgImage.width / bgImage.height;
-
+    
+    // get canvas dimensions based on window
     let canvasWidth, canvasHeight; 
-
     if (containerAspectRatio > imageAspectRatio) {
         canvasHeight = containerHeight;
         canvasWidth = canvasHeight * imageAspectRatio;
@@ -45,10 +51,17 @@ function resizeCanvas() {
     }
    
     // map needs to maintain aspect ratio
-    mapLayer.width = canvasWidth;
-    mapLayer.height = canvasHeight;
-    mapLayer.style.width = `${canvasWidth}px`;
-    mapLayer.style.height = `${canvasHeight}px`;
+    mapLayer.width = canvasWidth * zoomLevel;
+    mapLayer.height = canvasHeight * zoomLevel;
+    mapLayer.style.width = `${canvasWidth * zoomLevel}px`;
+    mapLayer.style.height = `${canvasHeight * zoomLevel}px`;
+    //mapOffsetX = (containerWidth - mapLayer.width) / 2;
+    //mapOffsetY = (containerHeight - mapLayer.height) / 2;
+    mapOffsetX = Math.max(0, (containerWidth - mapLayer.width) / 2);
+    mapOffsetY = Math.max(0, (containerHeight - mapLayer.height) / 2);
+    //mapLayer.style.left = `${mapOffsetX}px`;
+    //mapLayer.style.top = `${mapOffsetY}px`;
+
     // icon layer and drawing layer we want to fill the window
     [iconLayer, drawingLayer].forEach(layer => {
         //layer.width = canvasWidth;
@@ -60,17 +73,50 @@ function resizeCanvas() {
     });
 
     icons.forEach(icon => {
+        /*
         const leftPercent = parseInt(icon.style.left) / parseFloat(iconLayer.style.width);
         const topPercent = parseInt(icon.style.top) / parseFloat(iconLayer.style.height);
         icon.style.left = `${leftPercent * containerWidth}px`; 
         icon.style.top = `${topPercent * containerHeight}px`;
+        */
+        const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / mapLayer.width;
+        const topPercent = (parseInt(icon.style.top) - mapOffsetY) / mapLayer.height;
+        icon.style.left = `${leftPercent * mapLayer.width + mapOffsetX}px`; 
+        icon.style.top = `${topPercent * mapLayer.height + mapOffsetY}px`;
     });
 
     drawBackground();
     redrawCanvas();
 }
 
+function handleZoom(e) {
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    const delta = Math.sign(e.deltaY);
+    const zoomFactor = 0.1;
+
+    const prevZoom = zoomLevel;
+    zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel - delta * zoomFactor));
+    /*
+    if(delta) {
+        zoomLevel = Math.max(MIN_ZOOM, zoomLevel - zoomFactor);
+    } else {
+        zoomLevel = Math.max(MAX_ZOOM, zoomLevel + zoomFactor);
+    }
+    */
+
+    const zoomRatio = zoomLevel / prevZoom;
+    mapOffsetX = mouseX - (mouseX - mapOffsetX) * zoomRatio;
+    mapOffsetY = mouseY - (mouseY - mapOffsetY) * zoomRatio;
+
+    resizeCanvas();
+}
+
 function drawBackground() {
+    mapCtx.clearRect(0, 0, mapLayer.width, mapLayer.height);
     mapCtx.drawImage(bgImage, 0, 0, mapLayer.width, mapLayer.height);
 }
 
@@ -329,8 +375,10 @@ function drag(e) {
     let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
     let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
     // constrain the icon within the iconLayer
-    newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
+    //newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
+    //newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
+    newX = Math.max(mapOffsetX, Math.min(newX, mapOffsetX + mapLayer.width - draggedIcon.clientWidth));
+    newY = Math.max(mapOffsetY, Math.min(newY, mapOffsetY + mapLayer.height - draggedIcon.clientHeight));
     draggedIcon.style.left = `${newX}px`;
     draggedIcon.style.top = `${newY}px`;
 }
@@ -369,6 +417,10 @@ const deleteButton = document.getElementById('delMode');
 deleteButton.addEventListener('click', () => {
     switchToDelIconMode();
 });
+
+// zoom event listener
+//mapLayer.style.position = 'absolute';
+container.addEventListener('wheel', handleZoom);
 
 // mouse draw event listeners
 drawingLayer.addEventListener('mousedown', startDrawing);

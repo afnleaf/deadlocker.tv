@@ -7,6 +7,11 @@ templ Map() {
         <div class="map-container">
             <div id="controls">
                 <div class="control-column">
+                    <a href="/">
+                        <img src="/public/images/deadlock_logo_only.svg" alt="home" width="50" height="50">
+                    </a>
+                </div>
+                <div class="control-column">
                     <div id="sideSelect">
                         <div class="sideOption">
                             <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
@@ -47,15 +52,17 @@ templ Map() {
                         <option value="Yamato">Yamato</option>
                     </select>
                 </div>
-                <button id="addIcon">Add Icon</button>
-                <button id="delMode" class="mode-button">Del Icon</button>
-                <button id="moveMode" class="mode-button">Move</button>
-                <button id="penMode" class="mode-button active">Pen</button>
-                <button id="eraserMode" class="mode-button">Eraser</button>
-                <button id="undo">Undo</button>
-                <button id="clear">Clear</button>
+                <button type="button" id="addIcon">Add Icon</button>
+                <button type="button" id="delMode" class="mode-button">Del Icon</button>
+                <button type="button" id="moveMode" class="mode-button">Move</button>
+                <label> | </label>
+                <button type="button" id="penMode" class="mode-button active">Pen</button>
+                <button type="button" id="eraserMode" class="mode-button">Eraser</button>
+                <button type="button" id="undo">Undo</button>
+                <button type="button" id="clear">Clear</button>
+                <label> | </label>
                 <div>
-                    <label for="lineWidth">Line Thickness:</label>
+                    <label for="lineWidth"></label>
                     <select id="lineWidth">
                         <option value="1">1px</option>
                         <option value="3">3px</option>
@@ -65,7 +72,7 @@ templ Map() {
                     </select>
                 </div>
                 <div>
-                    <label for="lineColor">Color:</label>
+                    <label for="lineColor"></label>
                     <select id="lineColor">
                         <option value="#FFFFFF">White</option>
                         <option value="#000000">Black</option>
@@ -75,7 +82,7 @@ templ Map() {
                     </select>
                 </div>
                 <div> 
-                    <label for="penType">Pen type:</label>
+                    <label for="penType"></label>
                     <select id="penType">
                         <option value="opaque">Opaque</option>
                         <option value="highlighter">Highlighter</option>

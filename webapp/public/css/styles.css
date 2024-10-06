@@ -100,7 +100,7 @@ body {
 }
 
 .sideOption input[type="radio"] {
-    margin-right: 5px;
+    margin-right: 2px;
 }
 
 .draggable-icon {
@@ -127,7 +127,7 @@ body {
 .control-column {
     display: flex;
     flex-direction: column;
-    margin-right: 20px;
+    margin: 2px auto;
     align-items: center;
     width: auto;
 }
@@ -136,7 +136,7 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
+    gap: 4px;
 }
 
 #iconSelect {
@@ -161,7 +161,7 @@ select, button {
     background-color: var(--smoky-black);
     color: var(--khaki);
     border: 1px solid var(--kobicha);
-    padding: 5px;
+    padding: 4px;
     border-radius: 4px;
 }
 
