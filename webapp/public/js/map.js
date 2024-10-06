@@ -245,7 +245,7 @@ function redrawCanvas() {
 // icon stuff
 // --sapphire: #5F76E3;
 // --amber: #DDB35C;
-function addIcon(iconType, side) {
+function addIcon(iconName, side) {
     let teamColor = '';
     if(side === 'amber') {
         teamColor = 'rgba(221, 179, 92, 1)';
@@ -253,39 +253,35 @@ function addIcon(iconType, side) {
         teamColor = 'rgba(95, 118, 227, 1)'
     }
     const icon = document.createElement('img');
-    icon.src = `public/images/hero_icons/${iconType}`;
+    icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
     icon.style.left = '100px';
     icon.style.top = '100px';
-    //icon.style.position = 'relative';
-    //icon.style.margin = 'auto'; 
-    //icon.style.top = '50%';
-    //icon.style.transform = 'translateY(-50%)';
     icon.style.width = '50px';
     icon.style.height = '50px';
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
-    //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
     icon.style.background = teamColor;
-    //icon.style.outline = '2px solid rgba(221, 179, 92, 1)'
-    //icon.style.boxShadow = '0 0 0 2px rgba(221, 179, 92, 1)'
-    //icon.style.boxShadow = `${icon.style.boxShadow}, inset 0 0 0 2px rgba(255, 255, 255, 0.5)`;
+    // event listeners
+    //icon.addEventListener('mousedown', startDragging);
+    //icon.addEventListener('touchstart', startDragging); 
+    icon.addEventListener('mousedown', (e) => {
+        if(currentMode === 'move') {
+            startDragging(e);
+        } else if(currentMode === 'del') {
+            deleteIcon(e);
+        }
+    });
+    icon.addEventListener('touchstart', (e) => {
+        if(currentMode === 'move') {
+            startDragging(e);
+        } else if(currentMode === 'del') {
+            deleteIcon(e);
+        }
+    }); 
     // add to layer
-    icon.addEventListener('mousedown', startDragging);
-    icon.addEventListener('touchstart', startDragging); 
-    /*
-    if(currentMode === 'move') {
-        //startDragging(e);
-        icon.style.cursor = 'grab';
-        icon.addEventListener('mousedown', startDragging);
-    } else if(currentMode === 'del') {
-        //deleteIcon(e);
-        icon.style.cursor = 'not-allowed';
-        icon.addEventListener('mousedown', deleteIcon);
-    }
-    */
     iconLayer.appendChild(icon);
     icons.push(icon);
     switchToMoveMode();
@@ -330,9 +326,11 @@ function drag(e) {
 
 function deleteIcon(e) {
     if(currentMode !== 'del') return;
-    const icon = e.target;
-    icon.remove();
-    icons = icons.filter(i => i !== icon);
+    if(e.target.classList.contains('draggable-icon')) {
+        const icon = e.target;
+        icon.remove();
+        icons = icons.filter(i => i !== icon);
+    }
 }
 
 // icon event listeners
@@ -351,7 +349,7 @@ document.getElementById('addIcon').addEventListener('click', () => {
 });
 
 iconLayer.addEventListener('mousedown', (e) => {
-    if(currentMode === 'del') {
+    if(currentMode === 'del' && e.target.classList.contains('draggable-icon')) {
         deleteIcon(e);
     }
 });
