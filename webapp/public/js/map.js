@@ -123,9 +123,9 @@ function switchToDelIconMode() {
 }
 
 function draw(e) {
-    if (!isDrawing || currentMode !== 'pen') return;
-    const [x, y] = getMousePos(drawingLayer, e);
-    
+    if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
+    e.preventDefault();
+    const [x, y] = getEventPos(drawingLayer, e);
     if(currentMode === 'pen') {
         currentPath.points.push({x, y});
         redrawCanvas();
@@ -137,7 +137,7 @@ function draw(e) {
 function startDrawing(e) {
     if(currentMode !== 'pen' && currentMode !== 'eraser') return;
     isDrawing = true;
-    const [x, y] = getMousePos(drawingLayer, e);
+    const [x, y] = getEventPos(drawingLayer, e);
     if(currentMode === 'pen') {
         currentPath = {
             points: [{x, y}], 
@@ -160,10 +160,21 @@ function stopDrawing() {
     isDrawing = false;
 }
 
+/*
 function getMousePos(canvas, evt) {
     const rect = canvas.getBoundingClientRect();
     const x = (evt.clientX - rect.left) / rect.width;
     const y = (evt.clientY - rect.top) / rect.height;
+    return [x, y];
+}
+*/
+
+function getEventPos(canvas, e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
     return [x, y];
 }
 
@@ -364,6 +375,11 @@ drawingLayer.addEventListener('mousedown', startDrawing);
 drawingLayer.addEventListener('mousemove', draw);
 drawingLayer.addEventListener('mouseup', stopDrawing);
 drawingLayer.addEventListener('mouseout', stopDrawing);
+// touch draw event listener
+drawingLayer.addEventListener('touchstart', startDrawing);
+drawingLayer.addEventListener('touchmove', draw);
+drawingLayer.addEventListener('touchend', stopDrawing);
+drawingLayer.addEventListener('touchcancel', stopDrawing);
 
 // drag
 document.addEventListener('mousemove', drag);
