@@ -139,28 +139,16 @@ function handleTouchZoom(e) {
     const midY = (t1.clientY + t2.clientY) / 2;
     // convert to map coords
     const rect = container.getBoundingClientRect();
-    const normalizedX = (midX - rect.left) / rect.width;
-    const normalizedY = (midY - rect.top) / rect.height; 
+    const normalizedX = ((midX - rect.left) / rect.width) * container.clientWidth;
+    const normalizedY = ((midY - rect.top) / rect.height) * container.clientHeight; 
     const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
     const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
-    //const mapMouseX = (midX - rect.left - mapOffsetX) / zoomLevel;
-    //const mapMouseY = (midY - rect.top - mapOffsetY) / zoomLevel;
-    //const mapMouseX = (normalizedX * container.clientWidth - mapOffsetX) / zoomLevel;
-    //const mapMouseY = (normalizedY * container.clientHeight - mapOffsetY) / zoomLevel;
     const fixedX = normalizedX * container.clientWidth;
     const fixedY = normalizedY * container.clientHeight;
 
     const prevZoom = zoomLevel;
     zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - prevZoom * zoomFactor));
 
-    //mapOffsetX = midX - rect.left - mapMouseX * zoomLevel;
-    //mapOffsetY = midY - rect.top - mapMouseY * zoomLevel;
-    //mapOffsetX = (normalizedX * container.clientWidth - mapMouseX) * zoomLevel;
-    //mapOffsetY = (normalizedY * container.clientHeight - mapMouseY) * zoomLevel;
-    //mapOffsetX += fixedX - (fixedX - mapOffsetX) * (zoomLevel / prevZoom);
-    //mapOffsetY += fixedY - (fixedY - mapOffsetY) * (zoomLevel / prevZoom);
-    //mapOffsetX = mouseX - mapMouseX * zoomLevel;
-    //mapOffsetY = mouseY - mapMouseY * zoomLevel;
     mapOffsetX = normalizedX - mapMouseX * zoomLevel;
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
 
