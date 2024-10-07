@@ -153,7 +153,7 @@ function stopDraggingMap() {
 
 /* icon layer ---------------------------------------------------- */
 
-function addIcon(iconName, side) {
+function addIcon(iconName, side, x = 100, y = 100) {
     let teamColor = '';
     if(side === 'amber') {
         teamColor = 'rgba(221, 179, 92, 1)';
@@ -165,8 +165,8 @@ function addIcon(iconName, side) {
     icon.src = `public/images/hero_icons/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
-    icon.style.left = '100px';
-    icon.style.top = '100px';
+    icon.style.left = `${x-25}px`;
+    icon.style.top = `${y-25}px`;
     icon.style.width = '50px';
     icon.style.height = '50px';
     // team style
@@ -257,6 +257,48 @@ function drag(e) {
     draggedIcon.style.left = `${newX}px`;
     draggedIcon.style.top = `${newY}px`;
 }
+
+const iconMenu = document.getElementById('iconMenu');
+const iconNames = ['Abrams', 'Bebop', 'Dynamo', 'GreyTalon', 'Haze', 'Infernus', 'Ivy', 'Kelvin', 'LadyGeist', 'Lash', 'McGinnis', 'Mirage', 'Mo&Krill', 'Paradox', 'Pocket', 'Seven', 'Shiv', 'Vindicta', 'Viscous', 'Warden', 'Wraith', 'Yamato'];
+iconNames.forEach(iconName => {
+    const draggableIcon = createDraggableIcon(iconName);
+    iconMenu.appendChild(draggableIcon);
+});
+
+function createDraggableIcon(iconName) {
+    const icon = document.createElement('img');
+    icon.src = `/public/images/hero_icons/${iconName}.png`;
+    icon.classsName = 'menu-icon';
+    icon.style.width = '30px';
+    icon.style.height = '30px';
+    icon.style.cursor = 'grab';
+    icon.draggable = true;
+    icon.dataset.icon = iconName;
+
+    icon.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', iconName);
+    });
+
+    return icon;
+}
+
+container.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+
+container.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const iconName = e.dataTransfer.getData('text');
+    //const [x, y] = getEventPos(iconLayer, e);
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const selectedSide = document.querySelector('input[name="sideSwitch"]:checked').value;
+
+
+    addIcon(iconName, selectedSide, x, y);
+});
 
 /* drawing layer ------------------------------------------------- */
 
@@ -532,8 +574,10 @@ function addIconGet() {
 /* control panel event listeners --------------------------------- */
 
 // left side of menu bar
+/*
 const addIconButton = document.getElementById('addIcon'); 
 addIconButton.addEventListener('click', addIconGet);
+*/
 
 const deleteIconButton = document.getElementById('delMode');
 deleteIconButton.addEventListener('click', switchToDelIconMode);
@@ -584,10 +628,12 @@ document.addEventListener('keydown', checkKeydown);
 function checkKeydown(e) {
     //console.log(e.key);
     switch(e.key) {
+        /*
         // add icon
         case 'a':
             addIconGet();
             break;
+        */
         // delete icon
         case 'f':
             switchToDelIconMode();

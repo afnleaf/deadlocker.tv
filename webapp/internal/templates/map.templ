@@ -12,6 +12,9 @@ templ Map() {
                     </a>
                 </div>
                 <div class="control-column">
+                    <div id="iconMenu"></div>
+                </div>
+                <div class="control-column">
                     <div id="sideSelect">
                         <div class="sideOption">
                             <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
@@ -23,11 +26,10 @@ templ Map() {
                         </div>
                     </div>
                 </div>
+                <!--
                 <div class="control-column">
-                    <!-- <label for="iconSelect">Hero:</label> -->
                     <label for="iconSelect"></label>
                     <select id="iconSelect">
-                        <!-- <option value="">Choose a hero:</option> -->
                         <option value="Abrams">Abrams</option>
                         <option value="Bebop">Bebop</option>
                         <option value="Dynamo">Dynamo</option>
@@ -53,15 +55,16 @@ templ Map() {
                     </select>
                 </div>
                 <button type="button" id="addIcon">Add Icon</button>
-                <button type="button" id="delMode" class="mode-button">Delete Icon</button>
-                <button type="button" id="moveIconMode" class="mode-button">Move Icon</button>
-                <button type="button" id="moveMapMode" class="mode-button">Move Map</button>
-                <button type="button" id="clearIcons">Clear Icons</button>
+                -->
+                <button type="button" data-alt="f" id="delMode" class="mode-button">Delete Icon</button>
+                <button type="button" data-alt="i" id="moveIconMode" class="mode-button">Move Icon</button>
+                <button type="button" data-alt="m" id="moveMapMode" class="mode-button">Move Map</button>
+                <button type="button" data-alt="x" id="clearIcons">Clear Icons</button>
                 <label> | </label>
-                <button type="button" id="penMode" class="mode-button active">Pen</button>
-                <button type="button" id="eraserMode" class="mode-button">Eraser</button>
-                <button type="button" id="undo">Undo</button>
-                <button type="button" id="clearPen">Clear</button>
+                <button type="button" data-alt="d" id="penMode" class="mode-button active">Pen</button>
+                <button type="button" data-alt="e" id="eraserMode" class="mode-button">Eraser</button>
+                <button type="button" data-alt="z" id="undo">Undo</button>
+                <button type="button" data-alt="c" id="clearPen">Clear</button>
                 <div>
                     <label for="lineWidth"></label>
                     <select id="lineWidth">
