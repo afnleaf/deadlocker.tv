@@ -25,6 +25,10 @@ body {
     font-family: Roboto, sans-serif;
     background-color: var(--night-2);
     color: var(--khaki);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .chart-container {
@@ -77,6 +81,14 @@ body {
     */
 }
 
+.canvas-container, #mapLayer, #iconLayer, #drawingLayer {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: default;
+}
+
 #mapLayer {
     z-index: 1;
 }
@@ -107,6 +119,11 @@ body {
 
 .draggable-icon {
     pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: grab;
 }
 
 .draggable-icon:active {
