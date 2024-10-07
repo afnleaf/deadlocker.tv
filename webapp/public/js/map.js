@@ -26,7 +26,7 @@ let isDragging = false;
 let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
-const MIN_ZOOM = 0.25;
+const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 8;
 // move map
 let isDraggingMap = false;
@@ -121,7 +121,6 @@ function handleTouchZoom(e) {
     // distance between fingers
     const t1 = e.touches[0];
     const t2 = e.touches[1];
-    //const d = Math.sqer(Math.pow(t2.clientX - t1.clientX, 2) + Math.pow(t2.clientY - t1.clientY, 2));
     const distance = Math.hypot(
         t2.clientX - t1.clientX,
         t2.clientY - t1.clientY
@@ -133,6 +132,7 @@ function handleTouchZoom(e) {
     }
 
     const zoomFactor = distance / initialDistance;
+    //const zoomFactor = 0.1;
     
     // get midpoint
     const midX = (t1.clientX + t2.clientX) / 2;
@@ -140,7 +140,9 @@ function handleTouchZoom(e) {
     // convert to map coords
     const rect = container.getBoundingClientRect();
     const normalizedX = (midX - rect.left) / rect.width;
-    const normalizedY = (midY - rect.top) / rect.height;
+    const normalizedY = (midY - rect.top) / rect.height; 
+    const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
+    const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
     //const mapMouseX = (midX - rect.left - mapOffsetX) / zoomLevel;
     //const mapMouseY = (midY - rect.top - mapOffsetY) / zoomLevel;
     //const mapMouseX = (normalizedX * container.clientWidth - mapOffsetX) / zoomLevel;
@@ -149,17 +151,22 @@ function handleTouchZoom(e) {
     const fixedY = normalizedY * container.clientHeight;
 
     const prevZoom = zoomLevel;
-    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - prevZoom * zoomFactor));
 
     //mapOffsetX = midX - rect.left - mapMouseX * zoomLevel;
     //mapOffsetY = midY - rect.top - mapMouseY * zoomLevel;
     //mapOffsetX = (normalizedX * container.clientWidth - mapMouseX) * zoomLevel;
     //mapOffsetY = (normalizedY * container.clientHeight - mapMouseY) * zoomLevel;
-    mapOffsetX += fixedX - (fixedX - mapOffsetX) * (zoomLevel / prevZoom);
-    mapOffsetY += fixedY - (fixedY - mapOffsetY) * (zoomLevel / prevZoom);
+    //mapOffsetX += fixedX - (fixedX - mapOffsetX) * (zoomLevel / prevZoom);
+    //mapOffsetY += fixedY - (fixedY - mapOffsetY) * (zoomLevel / prevZoom);
+    //mapOffsetX = mouseX - mapMouseX * zoomLevel;
+    //mapOffsetY = mouseY - mapMouseY * zoomLevel;
+    mapOffsetX = normalizedX - mapMouseX * zoomLevel;
+    mapOffsetY = normalizedY - mapMouseX * zoomLevel;
 
     resizeCanvas();
     updateMapPosition();
+    switchToMoveMapMode();
 }
 
 function handleTouchStart(e) {
