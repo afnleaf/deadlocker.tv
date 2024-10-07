@@ -23,10 +23,10 @@ let icons = [];
 let draggedIcon = null;
 let isDragging = false;
 // zoom
-let zoomLevel = 3;
+let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
-const MIN_ZOOM = 0.5;
+const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 10;
 // move map
 let isDraggingMap = false;
@@ -78,7 +78,9 @@ function getEventPos(canvas, e) {
 bgImage.onload = () => {
     resizeCanvas()
 };
-bgImage.src = '/public/images/DeadlockMiniMap.png';
+//bgImage.src = '/public/images/DeadlockMiniMap.png';
+//bgImage.src = '/public/images/Map.png';
+bgImage.src = '/public/images/UpscaledMap.png';
 
 function handleZoom(e) {
     e.preventDefault();
@@ -110,7 +112,6 @@ function handleZoom(e) {
 }
 
 function updateMapPosition() {
-    //console.log('Updating map position', mapOffsetX, mapOffsetY);
     mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
@@ -160,7 +161,8 @@ function addIcon(iconName, side) {
         teamColor = 'rgba(95, 118, 227, 1)'
     }
     const icon = document.createElement('img');
-    icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
+    //icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
+    icon.src = `public/images/hero_icons/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
     icon.style.left = '100px';
@@ -374,9 +376,7 @@ function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
 /* controls ------------------------------------------------------ */
 
 function switchToPenMode() {
-    console.log(currentMode);
     if(currentMode !== 'pen') {
-        console.log('pen2');
         currentMode = 'pen';
         document.getElementById('penMode').classList.add('active');
         document.getElementById('moveIconMode').classList.remove('active');
@@ -448,8 +448,8 @@ function switchToDelIconMode() {
 /* event listeners ----------------------------------------------- */
 
 // zoom event listener
-//container.addEventListener('wheel', handleZoom);
-document.addEventListener('wheel', handleZoom);
+container.addEventListener('wheel', handleZoom);
+//document.addEventListener('wheel', handleZoom);
 
 // mouse map drag event listeners
 mapLayer.addEventListener('mousedown', startDraggingMap);
@@ -496,11 +496,30 @@ iconLayer.addEventListener('mousedown', (e) => {
     }
 });
 
-/* control panel event listeners --------------------------------- */
+/* control panel function ---------------------------------------- */
 
-// left side of menu bar
-const addIconButton = document.getElementById('addIcon'); 
-addIconButton.addEventListener('click', () => {
+function undoDraw() {
+    if(paths.length > 0) {
+        paths.pop();
+        redrawCanvas();
+    }
+}
+
+function clearDraw() {
+    while(paths.length > 0) {
+        paths.pop();
+    }
+    redrawCanvas();
+}
+
+function clearIcons() {
+    icons.forEach(icon =>{
+        icon.remove();
+    });
+    icons = [];
+}
+
+function addIconGet() {
     const iconSelect = document.getElementById('iconSelect');
     const selectedIcon = iconSelect.value;
     const sideRadio = document.querySelector('input[name="sideSwitch"]:checked');
@@ -508,7 +527,13 @@ addIconButton.addEventListener('click', () => {
     if(selectedIcon && selectedSide) {
         addIcon(selectedIcon, selectedSide);
     }
-});
+}
+
+/* control panel event listeners --------------------------------- */
+
+// left side of menu bar
+const addIconButton = document.getElementById('addIcon'); 
+addIconButton.addEventListener('click', addIconGet);
 
 const deleteIconButton = document.getElementById('delMode');
 deleteIconButton.addEventListener('click', switchToDelIconMode);
@@ -520,12 +545,7 @@ const moveMapButton = document.getElementById('moveMapMode');
 moveMapButton.addEventListener('click', switchToMoveMapMode);
 
 const clearIconsButton = document.getElementById('clearIcons');
-clearIconsButton.addEventListener('click', () => {
-    icons.forEach(icon =>{
-        icon.remove();
-    });
-    icons = [];
-});
+clearIconsButton.addEventListener('click', clearIcons);
 
 // right side of menu bar
 const penModeButton = document.getElementById('penMode');
@@ -535,20 +555,10 @@ const eraserButton = document.getElementById('eraserMode');
 eraserButton.addEventListener('click', switchToEraserMode);
 
 const undoButton = document.getElementById('undo');
-undoButton.addEventListener('click', () => {
-    if(paths.length > 0) {
-        paths.pop();
-        redrawCanvas();
-    }
-});
+undoButton.addEventListener('click', undoDraw);
 
 const clearPenButton = document.getElementById('clearPen');
-clearPenButton.addEventListener('click', () => {
-    while(paths.length > 0) {
-        paths.pop();
-    }
-    redrawCanvas();
-});
+clearPenButton.addEventListener('click', clearDraw);
 
 const lineWidthMenu = document.getElementById('lineWidth');
 lineWidthMenu.addEventListener('change', (e) => {
@@ -568,6 +578,52 @@ penTypeMenu.addEventListener('change', (e) => {
     switchToPenMode();
 });
 
+/* keyboard event listeners */
+document.addEventListener('keydown', checkKeydown);
+
+function checkKeydown(e) {
+    //console.log(e.key);
+    switch(e.key) {
+        // add icon
+        case 'a':
+            addIconGet();
+            break;
+        // delete icon
+        case 'f':
+            switchToDelIconMode();
+            break;
+        // move icon
+        case 'i':
+            switchToMoveIconMode();
+            break;
+        // move map
+        case 'm':
+            switchToMoveMapMode();
+            break;
+        // clear icons
+        case 'x':
+            clearIcons();
+            break;
+        // clear draw
+        case 'c':
+            clearDraw();    
+            break;
+        // draw
+        case 'd':
+            switchToPenMode();
+            break;
+        // eraser
+        case 'e':
+            switchToEraserMode();
+            break;
+        // undo
+        case 'z':
+            undoDraw();
+            break;
+        default:
+            break;
+    }
+}
 
 /* initial setup defaults ---------------------------------------- */
 bgImage.onload = () => {
