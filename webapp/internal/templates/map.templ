@@ -7,11 +7,6 @@ templ Map() {
         <div class="map-container">
             <div id="controls">
                 <div class="control-column">
-                    <a href="/">
-                        <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">
-                    </a>
-                </div>
-                <div class="control-column">
                     <div id="iconMenu"></div>
                 </div>
                 <div class="control-column">
@@ -61,7 +56,7 @@ templ Map() {
                 <button type="button" data-alt="m" id="moveMapMode" class="mode-button">Move Map</button>
                 <button type="button" data-alt="x" id="clearIcons">Clear Icons</button>
                 <label> | </label>
-                <button type="button" data-alt="d" id="penMode" class="mode-button active">Pen</button>
+                <button type="button" data-alt="d" id="penMode" class="mode-button active">Draw</button>
                 <button type="button" data-alt="e" id="eraserMode" class="mode-button">Eraser</button>
                 <button type="button" data-alt="z" id="undo">Undo</button>
                 <button type="button" data-alt="c" id="clearPen">Clear</button>
@@ -91,6 +86,11 @@ templ Map() {
                         <option value="opaque">Opaque</option>
                         <option value="highlighter">Highlighter</option>
                     </select>
+                </div>
+                <div class="control-column">
+                    <a href="/">
+                        <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">
+                    </a>
                 </div>
             </div>
             <div class="canvas-container">

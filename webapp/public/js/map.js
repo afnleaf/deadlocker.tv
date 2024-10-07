@@ -32,6 +32,7 @@ const MAX_ZOOM = 8;
 let isDraggingMap = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
+let initialDistance = 0;
 
 /* all layers ---------------------------------------------------- */
 
@@ -82,7 +83,7 @@ bgImage.onload = () => {
 //bgImage.src = '/public/images/Map.png';
 bgImage.src = '/public/images/UpscaledMap.png';
 
-function handleZoom(e) {
+function handleWheelZoom(e) {
     e.preventDefault();
     const rect = container.getBoundingClientRect();
     //const mouseX = (e.clientX - rect.left) / rect.width;
@@ -109,6 +110,60 @@ function handleZoom(e) {
     resizeCanvas();
     updateMapPosition();
     switchToMoveMapMode();
+}
+
+function handleTouchZoom(e) {
+    e.preventDefault();
+    
+    // for pinch zoom we want 2 fingers
+    if(e.touches.length !== 2) return;
+
+    // distance between fingers
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+    //const d = Math.sqer(Math.pow(t2.clientX - t1.clientX, 2) + Math.pow(t2.clientY - t1.clientY, 2));
+    const distance = Math.hypot(
+        t2.clientX - t1.clientX,
+        t2.clientY - t1.clientY
+    );
+
+    if(initialDistance === 0) {
+        initialDistance = distance;
+        return;
+    }
+
+    const zoomFactor = distance / initialDistance;
+    
+    // get midpoint
+    const midX = (t1.clientX + t2.clientX) / 2;
+    const midY = (t1.clientY + t2.clientY) / 2;
+    // convert to map coords
+    const rect = container.getBoundingClientRect();
+    const mapMouseX = (midX - rect.left - mapOffsetX) / zoomLevel;
+    const mapMouseY = (midY - rect.top - mapOffsetY) / zoomLevel;
+
+    const prevZoom = zoomLevel;
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
+
+    mapOffsetX = midX - rect.left - mapMouseX * zoomLevel;
+    mapOffsetY = midY - rect.top - mapMouseY * zoomLevel;
+
+    resizeCanvas();
+    updateMapPosition();
+}
+
+function handleTouchStart(e) {
+    if (e.touches.length === 2) {
+        // Reset initial distance when a new pinch gesture starts
+        initialDistance = 0;
+    }
+}
+
+function handleTouchEnd(e) {
+    if (e.touches.length < 2) {
+        // Reset initial distance when pinch gesture ends
+        initialDistance = 0;
+    }
 }
 
 function updateMapPosition() {
@@ -490,8 +545,10 @@ function switchToDelIconMode() {
 /* event listeners ----------------------------------------------- */
 
 // zoom event listener
-container.addEventListener('wheel', handleZoom);
-//document.addEventListener('wheel', handleZoom);
+container.addEventListener('wheel', handleWheelZoom);
+container.addEventListener('touchstart', handleTouchStart);
+container.addEventListener('touchmove', handleTouchZoom);
+container.addEventListener('touchend', handleTouchEnd);
 
 // mouse map drag event listeners
 mapLayer.addEventListener('mousedown', startDraggingMap);
