@@ -27,7 +27,7 @@ let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 10;
+const MAX_ZOOM = 8;
 // move map
 let isDraggingMap = false;
 let lastMouseX = 0;
