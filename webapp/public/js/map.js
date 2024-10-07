@@ -139,15 +139,15 @@ function handleTouchZoom(e) {
     const midY = (t1.clientY + t2.clientY) / 2;
     // convert to map coords
     const rect = container.getBoundingClientRect();
-    const normalizedX = ((midX - rect.left) / rect.width) * container.clientWidth;
-    const normalizedY = ((midY - rect.top) / rect.height) * container.clientHeight; 
+    const normalizedX = ((midX - rect.left) / rect.width);
+    const normalizedY = ((midY - rect.top) / rect.height); 
     const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
     const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
     const fixedX = normalizedX * container.clientWidth;
     const fixedY = normalizedY * container.clientHeight;
 
     const prevZoom = zoomLevel;
-    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - prevZoom * zoomFactor));
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
 
     mapOffsetX = normalizedX - mapMouseX * zoomLevel;
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
