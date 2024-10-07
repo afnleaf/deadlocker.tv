@@ -101,8 +101,8 @@ function handleWheelZoom(e) {
     zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - delta * zoomFactor));
 
     // new dimensions of map
-    const nW = bgImage.width * zoomLevel;
-    const nH = bgImage.height * zoomLevel;
+    //const nW = bgImage.width * zoomLevel;
+    //const nH = bgImage.height * zoomLevel;
 
     mapOffsetX = mouseX - mapMouseX * zoomLevel;
     mapOffsetY = mouseY - mapMouseY * zoomLevel;
@@ -132,26 +132,20 @@ function handleTouchZoom(e) {
     }
 
     const zoomFactor = distance / initialDistance;
-    //const zoomFactor = 0.1;
     
     // get midpoint
     const midX = (t1.clientX + t2.clientX) / 2;
     const midY = (t1.clientY + t2.clientY) / 2;
     // convert to map coords
     const rect = container.getBoundingClientRect();
-    const normalizedX = ((midX - rect.left) / rect.width);
-    const normalizedY = ((midY - rect.top) / rect.height); 
+    const normalizedX = (midX - rect.left) / rect.width;
+    const normalizedY = (midY - rect.top) / rect.height; 
     const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
     const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
-    const fixedX = normalizedX * container.clientWidth;
-    const fixedY = normalizedY * container.clientHeight;
-
     const prevZoom = zoomLevel;
     zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
-
     mapOffsetX = normalizedX - mapMouseX * zoomLevel;
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
-
     resizeCanvas();
     updateMapPosition();
     switchToMoveMapMode();
