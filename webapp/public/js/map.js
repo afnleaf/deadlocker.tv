@@ -139,18 +139,20 @@ function handleTouchZoom(e) {
     const midY = (t1.clientY + t2.clientY) / 2;
     // convert to map coords
     const rect = container.getBoundingClientRect();
-    //const mapMouseX = (((midX - rect.left) / rect.width) - mapOffsetX) / zoomLevel;
-    //const mapMouseY = (((midY - rect.top) - mapOffsetY) / rect.height) / zoomLevel;
-    const mapMouseX = (midX - rect.left - mapOffsetX) / zoomLevel;
-    const mapMouseY = (midY - rect.top - mapOffsetY) / zoomLevel;
+    const normalizedX = (midX - rect.left) / rect.width;
+    const normalizedY = (midY - rect.top) / rect.height;
+    //const mapMouseX = (midX - rect.left - mapOffsetX) / zoomLevel;
+    //const mapMouseY = (midY - rect.top - mapOffsetY) / zoomLevel;
+    const mapMouseX = (normalizedX * container.clientWidth - mapOffsetX) / zoomLevel;
+    const mapMouseY = (normalizedY * container.clientHeight - mapOffsetY) / zoomLevel;
 
     const prevZoom = zoomLevel;
     zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
 
     //mapOffsetX = midX - rect.left - mapMouseX * zoomLevel;
     //mapOffsetY = midY - rect.top - mapMouseY * zoomLevel;
-    mapOffsetX = midX - rect.left - mapMouseX * zoomLevel;
-    mapOffsetY = midY - rect.top - mapMouseY * zoomLevel;
+    mapOffsetX = normalizedX * container.clientWidth - mapMouseX * zoomLevel;
+    mapOffsetY = normalizedY * container.clientHeight - mapMouseY * zoomLevel;
 
     resizeCanvas();
     updateMapPosition();
