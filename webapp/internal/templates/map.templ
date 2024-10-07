@@ -8,7 +8,7 @@ templ Map() {
             <div id="controls">
                 <div class="control-column">
                     <a href="/">
-                        <img src="/public/images/deadlock_logo_only.svg" alt="home" width="50" height="50">
+                        <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">
                     </a>
                 </div>
                 <div class="control-column">
@@ -53,14 +53,15 @@ templ Map() {
                     </select>
                 </div>
                 <button type="button" id="addIcon">Add Icon</button>
-                <button type="button" id="delMode" class="mode-button">Del Icon</button>
-                <button type="button" id="moveMode" class="mode-button">Move</button>
+                <button type="button" id="delMode" class="mode-button">Delete Icon</button>
+                <button type="button" id="moveIconMode" class="mode-button">Move Icon</button>
+                <button type="button" id="moveMapMode" class="mode-button">Move Map</button>
+                <button type="button" id="clearIcons">Clear Icons</button>
                 <label> | </label>
                 <button type="button" id="penMode" class="mode-button active">Pen</button>
                 <button type="button" id="eraserMode" class="mode-button">Eraser</button>
                 <button type="button" id="undo">Undo</button>
-                <button type="button" id="clear">Clear</button>
-                <label> | </label>
+                <button type="button" id="clearPen">Clear</button>
                 <div>
                     <label for="lineWidth"></label>
                     <select id="lineWidth">

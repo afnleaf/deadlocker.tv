@@ -28,6 +28,7 @@ body {
 }
 
 .chart-container {
+    position: relative;
     width: 100%;
     height: 100%;
     margin: 5px auto;
@@ -39,6 +40,7 @@ body {
 }
 
 .map-container {
+    position: relative;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -61,10 +63,10 @@ body {
 
 #mapLayer, #iconLayer, #drawingLayer {
     position: absolute;
+    /*
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    /*
     border-width: 2px;
     border-style: solid;
     border-color: var(--dutch-white);
@@ -132,6 +134,13 @@ body {
     width: auto;
 }
 
+#home {
+    width: 32px;
+    height: 32px;
+    display: block;
+    margin: auto; 
+}
+
 #sideSelect {
     display: flex;
     flex-direction: row;
@@ -167,7 +176,7 @@ select, button {
 
 button {
     cursor: pointer;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-out;
+    transition: color 0.05s ease-in-out, background-color 0.05s ease-in-out, transform 0.05s ease-out;
     /*margin: 50px auto;*/
 }
 

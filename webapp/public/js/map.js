@@ -1,6 +1,6 @@
 // map.js
 
-// content variables
+// content elements
 const container = document.querySelector('.canvas-container');
 const mapLayer = document.getElementById('mapLayer');
 const iconLayer = document.getElementById('iconLayer');
@@ -8,111 +8,111 @@ const drawingLayer = document.getElementById('drawingLayer');
 const mapCtx = mapLayer.getContext('2d');
 const drawCtx = drawingLayer.getContext('2d');
 const bgImage = new Image();
+let currentMode = 'pen';
+// drawing
 let paths = [];
 let currentPath = null;
-let icons = [];
-let draggedIcon = null;
-let isDragging = false;
-let currentMode = 'pen';
-// drawing variables
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
 let penType = "opaque";
+// icons
+let icons = [];
+let draggedIcon = null;
+let isDragging = false;
 // zoom
-let zoomLevel = 1;
+let zoomLevel = 3;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 5;
+const MAX_ZOOM = 10;
+// move map
+let isDraggingMap = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
 
-
-bgImage.onload = () => {
-    resizeCanvas();
-};
-bgImage.src = '/public/images/DeadlockMiniMap.png';
+/* all layers ---------------------------------------------------- */
 
 function resizeCanvas() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    const containerAspectRatio = containerWidth / containerHeight;
-    const imageAspectRatio = bgImage.width / bgImage.height;
-    
-    // get canvas dimensions based on window
-    let canvasWidth, canvasHeight; 
-    if (containerAspectRatio > imageAspectRatio) {
-        canvasHeight = containerHeight;
-        canvasWidth = canvasHeight * imageAspectRatio;
-    } else {
-        canvasWidth = containerWidth;
-        canvasHeight = canvasWidth / imageAspectRatio;
-    }
-   
-    // map needs to maintain aspect ratio
-    mapLayer.width = canvasWidth * zoomLevel;
-    mapLayer.height = canvasHeight * zoomLevel;
-    mapLayer.style.width = `${canvasWidth * zoomLevel}px`;
-    mapLayer.style.height = `${canvasHeight * zoomLevel}px`;
-    //mapOffsetX = (containerWidth - mapLayer.width) / 2;
-    //mapOffsetY = (containerHeight - mapLayer.height) / 2;
-    mapOffsetX = Math.max(0, (containerWidth - mapLayer.width) / 2);
-    mapOffsetY = Math.max(0, (containerHeight - mapLayer.height) / 2);
-    //mapLayer.style.left = `${mapOffsetX}px`;
-    //mapLayer.style.top = `${mapOffsetY}px`;
 
-    // icon layer and drawing layer we want to fill the window
+    mapLayer.width = bgImage.width * zoomLevel;
+    mapLayer.height = bgImage.height * zoomLevel;
+    mapLayer.style.width = `${mapLayer.width}px`;
+    mapLayer.style.height = `${mapLayer.height}px`;
+
     [iconLayer, drawingLayer].forEach(layer => {
-        //layer.width = canvasWidth;
-        //layer.height = canvasHeight;
         layer.width = containerWidth;
         layer.height = containerHeight;
         layer.style.width = `${containerWidth}px`;
         layer.style.height = `${containerHeight}px`;
     });
-
+    
+    drawBackground();
+    redrawCanvas();
+    updateMapPosition();
+    
     icons.forEach(icon => {
-        /*
-        const leftPercent = parseInt(icon.style.left) / parseFloat(iconLayer.style.width);
-        const topPercent = parseInt(icon.style.top) / parseFloat(iconLayer.style.height);
-        icon.style.left = `${leftPercent * containerWidth}px`; 
-        icon.style.top = `${topPercent * containerHeight}px`;
-        */
         const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / mapLayer.width;
         const topPercent = (parseInt(icon.style.top) - mapOffsetY) / mapLayer.height;
         icon.style.left = `${leftPercent * mapLayer.width + mapOffsetX}px`; 
         icon.style.top = `${topPercent * mapLayer.height + mapOffsetY}px`;
     });
-
-    drawBackground();
-    redrawCanvas();
 }
+
+function getEventPos(canvas, e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+    return [x, y];
+}
+
+/* map layer ----------------------------------------------------- */
+
+// load map image
+bgImage.onload = () => {
+    resizeCanvas()
+};
+bgImage.src = '/public/images/DeadlockMiniMap.png';
 
 function handleZoom(e) {
     e.preventDefault();
     const rect = container.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    //const mouseX = (e.clientX - rect.left) / rect.width;
+    //const mouseY = (e.clientY - rect.top) / rect.height;
+    const [mouseX, mouseY] = getEventPos(mapLayer, e);
+
+    // mouse pos relative to map content
+    const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
+    const mapMouseY = (mouseY - mapOffsetY) / zoomLevel;
 
     const delta = Math.sign(e.deltaY);
     const zoomFactor = 0.1;
 
     const prevZoom = zoomLevel;
-    zoomLevel = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel - delta * zoomFactor));
-    /*
-    if(delta) {
-        zoomLevel = Math.max(MIN_ZOOM, zoomLevel - zoomFactor);
-    } else {
-        zoomLevel = Math.max(MAX_ZOOM, zoomLevel + zoomFactor);
-    }
-    */
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - delta * zoomFactor));
 
-    const zoomRatio = zoomLevel / prevZoom;
-    mapOffsetX = mouseX - (mouseX - mapOffsetX) * zoomRatio;
-    mapOffsetY = mouseY - (mouseY - mapOffsetY) * zoomRatio;
+    // new dimensions of map
+    const nW = bgImage.width * zoomLevel;
+    const nH = bgImage.height * zoomLevel;
+
+    mapOffsetX = mouseX - mapMouseX * zoomLevel;
+    mapOffsetY = mouseY - mapMouseY * zoomLevel;
 
     resizeCanvas();
+    updateMapPosition();
+    switchToMoveMapMode();
+}
+
+function updateMapPosition() {
+    //console.log('Updating map position', mapOffsetX, mapOffsetY);
+    mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
 
 function drawBackground() {
@@ -120,52 +120,165 @@ function drawBackground() {
     mapCtx.drawImage(bgImage, 0, 0, mapLayer.width, mapLayer.height);
 }
 
-function switchToPenMode() {
-    if(currentMode !== 'pen') { 
-        currentMode = 'pen';
-        document.getElementById('penMode').classList.add('active');
-        document.getElementById('moveMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        drawingLayer.style.pointerEvents = 'auto';
-        iconLayer.style.pointerEvents = 'none';
+function startDraggingMap(e) {
+    if(currentMode !== 'map') return;
+    isDraggingMap = true;
+    lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+    lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+}
+
+function dragMap(e) {
+    if(!isDraggingMap || currentMode !== 'map') return;
+    e.preventDefault();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const deltaX = clientX - lastMouseX;
+    const deltaY = clientY - lastMouseY;
+    mapOffsetX += deltaX;
+    mapOffsetY += deltaY;
+    //const maxOffsetX = container.clientWidth - mapLayer.width;
+    //const maxOffsetY = container.clientHeight - mapLayer.height;
+    //mapOffsetX = Math.min(0, Math.max(mapOffsetX, maxOffsetX));
+    //mapOffsetY = Math.min(0, Math.max(mapOffsetY, maxOffsetY));
+    lastMouseX = clientX;
+    lastMouseY = clientY;
+    updateMapPosition();
+}
+
+function stopDraggingMap() {
+    isDraggingMap = false;
+}
+
+
+/* icon layer ---------------------------------------------------- */
+
+function addIcon(iconName, side) {
+    let teamColor = '';
+    if(side === 'amber') {
+        teamColor = 'rgba(221, 179, 92, 1)';
+    } else if(side === 'sapphire') {
+        teamColor = 'rgba(95, 118, 227, 1)'
+    }
+    const icon = document.createElement('img');
+    icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
+    icon.className = 'draggable-icon';
+    icon.style.position = 'absolute';
+    icon.style.left = '100px';
+    icon.style.top = '100px';
+    icon.style.width = '50px';
+    icon.style.height = '50px';
+    // team style
+    icon.style.borderRadius = '50%';
+    icon.style.display = 'block';
+    icon.style.background = teamColor;
+    // event listeners
+    icon.addEventListener('mousedown', (e) => {
+        if(currentMode === 'map') {
+            switchToMoveIconMode();
+        } 
+        if(currentMode === 'move') {
+            startDragging(e);
+        } else if(currentMode === 'del') {
+            deleteIcon(e);
+        }
+    });
+    icon.addEventListener('touchstart', (e) => {
+        if(currentMode === 'map') {
+            switchToMoveIconMode();
+        } 
+        if(currentMode === 'move') {
+            startDragging(e);
+        } else if(currentMode === 'del') {
+            deleteIcon(e);
+        }
+    }); 
+    // add to layer
+    iconLayer.appendChild(icon);
+    icons.push(icon);
+    switchToMoveIconMode();
+}
+
+function deleteIcon(e) {
+    if(currentMode !== 'del') return;
+    if(e.target.classList.contains('draggable-icon')) {
+        const icon = e.target;
+        icon.remove();
+        icons = icons.filter(i => i !== icon);
     }
 }
 
-function switchToEraserMode() {
-    if(currentMode !== 'eraser') {
-        currentMode = 'eraser';
-        document.getElementById('eraserMode').classList.add('active');
-        document.getElementById('moveMode').classList.remove('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        drawingLayer.style.pointerEvents = 'auto';
-        iconLayer.style.pointerEvents = 'none';
-    }
+function startDragging(e) {
+    if(currentMode !== 'move') return;
+    e.preventDefault();
+    e.stopPropagation(); // testing this
+    isDragging = true;
+    draggedIcon = e.target;
+    const rect = iconLayer.getBoundingClientRect();
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
+    draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
+    draggedIcon.style.cursor = 'grabbing';
 }
 
-function switchToMoveMode() {
-    if(currentMode !== 'move') {
-        currentMode = 'move';
-        document.getElementById('moveMode').classList.add('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        drawingLayer.style.pointerEvents = 'none';
-        iconLayer.style.pointerEvents = 'auto';
+function stopDragging() {
+    if(draggedIcon) {
+        draggedIcon.style.cursor = 'grab';
     }
+    isDragging = false;
+    draggedIcon = null;
 }
 
-function switchToDelIconMode() {
-    if(currentMode !== 'del') {
-        currentMode = 'del';
-        document.getElementById('delMode').classList.add('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('moveMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        drawingLayer.style.pointerEvents = 'none';
-        iconLayer.style.pointerEvents = 'auto';
+function drag(e) {
+    if(!isDragging || currentMode !== 'move' || !draggedIcon) return;
+    e.preventDefault();
+    const rect = iconLayer.getBoundingClientRect();
+    let clientX, clientY;
+    
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else if (e.clientX !== undefined && e.clientY !== undefined) {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    } else {
+        return;
     }
+
+    let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
+    let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    
+    // constrain the icon within the map layer
+    newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
+    newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
+    
+    draggedIcon.style.left = `${newX}px`;
+    draggedIcon.style.top = `${newY}px`;
+}
+
+/* drawing layer ------------------------------------------------- */
+
+function redrawCanvas() {
+    drawCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
+
+    [...paths, currentPath].filter(Boolean).forEach(path => {
+        drawCtx.beginPath();
+        path.points.forEach((point, index) => {
+            const x = point.x * drawingLayer.width;
+            const y = point.y * drawingLayer.height; 
+            if (index === 0) {
+                drawCtx.moveTo(x, y);
+            } else {
+                drawCtx.lineTo(x, y);
+            }
+        });
+        drawCtx.strokeStyle = path.color;
+        drawCtx.lineWidth = path.width;
+        drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.stroke();
+    });
 }
 
 function draw(e) {
@@ -206,24 +319,6 @@ function stopDrawing() {
     isDrawing = false;
 }
 
-/*
-function getMousePos(canvas, evt) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (evt.clientX - rect.left) / rect.width;
-    const y = (evt.clientY - rect.top) / rect.height;
-    return [x, y];
-}
-*/
-
-function getEventPos(canvas, e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    const x = (clientX - rect.left) / rect.width;
-    const y = (clientY - rect.top) / rect.height;
-    return [x, y];
-}
-
 function eraseAtPoint(x, y) {
     const eraserRadius = lineWidth / (2 * drawingLayer.width);
     //const eraserRadius = 1 / (2 * drawingLayer.width); 
@@ -239,7 +334,7 @@ function isPathNearPoint(path, x, y, radius) {
     });
 }
 
-// x1y1/x2y2 are the start/end of the line, pxpy is the point eraser is at
+/* x1y1/x2y2 are the start/end of the line, pxpy is the point eraser is at */
 function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
     // vectors
     // (A,B) is from start of line to point
@@ -276,157 +371,110 @@ function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
     return distance <= radius;
 }
 
-function redrawCanvas() {
-    drawCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
+/* controls ------------------------------------------------------ */
 
-    [...paths, currentPath].filter(Boolean).forEach(path => {
-        drawCtx.beginPath();
-        path.points.forEach((point, index) => {
-            const x = point.x * drawingLayer.width;
-            const y = point.y * drawingLayer.height; 
-            if (index === 0) {
-                drawCtx.moveTo(x, y);
-            } else {
-                drawCtx.lineTo(x, y);
-            }
-        });
-        drawCtx.strokeStyle = path.color;
-        drawCtx.lineWidth = path.width;
-        drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
-        drawCtx.lineCap = 'round';
-        drawCtx.lineJoin = 'round';
-        drawCtx.stroke();
-    });
-}
-
-// icon stuff
-// --sapphire: #5F76E3;
-// --amber: #DDB35C;
-function addIcon(iconName, side) {
-    let teamColor = '';
-    if(side === 'amber') {
-        teamColor = 'rgba(221, 179, 92, 1)';
-    } else if(side === 'sapphire') {
-        teamColor = 'rgba(95, 118, 227, 1)'
-    }
-    const icon = document.createElement('img');
-    icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
-    icon.className = 'draggable-icon';
-    icon.style.position = 'absolute';
-    icon.style.left = '100px';
-    icon.style.top = '100px';
-    icon.style.width = '50px';
-    icon.style.height = '50px';
-    // team style
-    icon.style.borderRadius = '50%';
-    icon.style.display = 'block';
-    icon.style.background = teamColor;
-    // event listeners
-    //icon.addEventListener('mousedown', startDragging);
-    //icon.addEventListener('touchstart', startDragging); 
-    icon.addEventListener('mousedown', (e) => {
-        if(currentMode === 'move') {
-            startDragging(e);
-        } else if(currentMode === 'del') {
-            deleteIcon(e);
-        }
-    });
-    icon.addEventListener('touchstart', (e) => {
-        if(currentMode === 'move') {
-            startDragging(e);
-        } else if(currentMode === 'del') {
-            deleteIcon(e);
-        }
-    }); 
-    // add to layer
-    iconLayer.appendChild(icon);
-    icons.push(icon);
-    switchToMoveMode();
-}
-
-function startDragging(e) {
-    if(currentMode !== 'move') return;
-    e.preventDefault();
-    e.stopPropagation(); // testing this
-    isDragging = true;
-    draggedIcon = e.target;
-    const rect = iconLayer.getBoundingClientRect();
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-    draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
-    draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
-    draggedIcon.style.cursor = 'grabbing';
-}
-
-function stopDragging() {
-    if(draggedIcon) {
-        draggedIcon.style.cursor = 'grab';
-    }
-    isDragging = false;
-    draggedIcon = null;
-}
-
-function drag(e) {
-    if(!isDragging || currentMode !== 'move') return;
-    e.preventDefault();
-    const rect = iconLayer.getBoundingClientRect();
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-    let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
-    let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
-    // constrain the icon within the iconLayer
-    //newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    //newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
-    newX = Math.max(mapOffsetX, Math.min(newX, mapOffsetX + mapLayer.width - draggedIcon.clientWidth));
-    newY = Math.max(mapOffsetY, Math.min(newY, mapOffsetY + mapLayer.height - draggedIcon.clientHeight));
-    draggedIcon.style.left = `${newX}px`;
-    draggedIcon.style.top = `${newY}px`;
-}
-
-function deleteIcon(e) {
-    if(currentMode !== 'del') return;
-    if(e.target.classList.contains('draggable-icon')) {
-        const icon = e.target;
-        icon.remove();
-        icons = icons.filter(i => i !== icon);
+function switchToPenMode() {
+    console.log(currentMode);
+    if(currentMode !== 'pen') {
+        console.log('pen2');
+        currentMode = 'pen';
+        document.getElementById('penMode').classList.add('active');
+        document.getElementById('moveIconMode').classList.remove('active');
+        document.getElementById('moveMapMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'auto';
+        mapLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'none';
     }
 }
+
+function switchToEraserMode() {
+    if(currentMode !== 'eraser') {
+        currentMode = 'eraser';
+        document.getElementById('eraserMode').classList.add('active');
+        document.getElementById('moveIconMode').classList.remove('active');
+        document.getElementById('moveMapMode').classList.remove('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'auto';
+        mapLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'none';
+    }
+}
+
+function switchToMoveIconMode() {
+    if(currentMode !== 'move') {
+        currentMode = 'move';
+        document.getElementById('moveIconMode').classList.add('active');
+        document.getElementById('moveMapMode').classList.remove('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'none';
+        mapLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'auto';
+    }
+}
+
+function switchToMoveMapMode() {
+    if(currentMode !== 'map') {
+        currentMode = 'map';
+        document.getElementById('moveMapMode').classList.add('active');
+        document.getElementById('moveIconMode').classList.remove('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('delMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'none';
+        mapLayer.style.pointerEvents = 'auto';
+        iconLayer.style.pointerEvents = 'none';
+    }
+}
+
+function switchToDelIconMode() {
+    if(currentMode !== 'del') {
+        currentMode = 'del';
+        document.getElementById('delMode').classList.add('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('moveIconMode').classList.remove('active');
+        document.getElementById('moveMapMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        drawingLayer.style.pointerEvents = 'none';
+        mapLayer.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'auto';
+    }
+}
+
+/* event listeners ----------------------------------------------- */
+
+// zoom event listener
+//container.addEventListener('wheel', handleZoom);
+document.addEventListener('wheel', handleZoom);
+
+// mouse map drag event listeners
+mapLayer.addEventListener('mousedown', startDraggingMap);
+mapLayer.addEventListener('mousemove', dragMap);
+mapLayer.addEventListener('mouseup', stopDraggingMap);
+mapLayer.addEventListener('mouseout', stopDraggingMap);
+
+// touch map drag event listener
+mapLayer.addEventListener('touchstart', startDraggingMap);
+mapLayer.addEventListener('touchmove', dragMap);
+mapLayer.addEventListener('touchend', stopDraggingMap);
+mapLayer.addEventListener('touchcancel', stopDraggingMap);
 
 // icon event listeners
 iconLayer.addEventListener('mousemove', drag);
 iconLayer.addEventListener('touchmove', drag)
 document.addEventListener('mouseup', stopDragging);
 document.addEventListener('touchend', stopDragging);
-document.getElementById('addIcon').addEventListener('click', () => {
-    const iconSelect = document.getElementById('iconSelect');
-    const selectedIcon = iconSelect.value;
-    const sideRadio = document.querySelector('input[name="sideSwitch"]:checked');
-    const selectedSide = sideRadio.value;
-    if(selectedIcon && selectedSide) {
-        addIcon(selectedIcon, selectedSide);
-    }
-});
-
-iconLayer.addEventListener('mousedown', (e) => {
-    if(currentMode === 'del' && e.target.classList.contains('draggable-icon')) {
-        deleteIcon(e);
-    }
-});
-
-const deleteButton = document.getElementById('delMode');
-deleteButton.addEventListener('click', () => {
-    switchToDelIconMode();
-});
-
-// zoom event listener
-//mapLayer.style.position = 'absolute';
-container.addEventListener('wheel', handleZoom);
 
 // mouse draw event listeners
 drawingLayer.addEventListener('mousedown', startDrawing);
 drawingLayer.addEventListener('mousemove', draw);
 drawingLayer.addEventListener('mouseup', stopDrawing);
 drawingLayer.addEventListener('mouseout', stopDrawing);
+
 // touch draw event listener
 drawingLayer.addEventListener('touchstart', startDrawing);
 drawingLayer.addEventListener('touchmove', draw);
@@ -441,56 +489,89 @@ document.addEventListener('mouseup', stopDragging);
 window.addEventListener('resize', resizeCanvas);
 document.addEventListener('DOMContentLoaded', resizeCanvas);
 
-// control panel event listeners
-document.getElementById('lineWidth').addEventListener('change', (e) => {
-    lineWidth = parseInt(e.target.value);
-    switchToPenMode();
+// delete icon
+iconLayer.addEventListener('mousedown', (e) => {
+    if(currentMode === 'del' && e.target.classList.contains('draggable-icon')) {
+        deleteIcon(e);
+    }
 });
 
-document.getElementById('lineColor').addEventListener('change', (e) => {
-    lineColor = e.target.value;
-    switchToPenMode();
+/* control panel event listeners --------------------------------- */
+
+// left side of menu bar
+const addIconButton = document.getElementById('addIcon'); 
+addIconButton.addEventListener('click', () => {
+    const iconSelect = document.getElementById('iconSelect');
+    const selectedIcon = iconSelect.value;
+    const sideRadio = document.querySelector('input[name="sideSwitch"]:checked');
+    const selectedSide = sideRadio.value;
+    if(selectedIcon && selectedSide) {
+        addIcon(selectedIcon, selectedSide);
+    }
 });
 
-document.getElementById('penType').addEventListener('change', (e) => {
-    penType = e.target.value;
-    switchToPenMode();
+const deleteIconButton = document.getElementById('delMode');
+deleteIconButton.addEventListener('click', switchToDelIconMode);
+
+const moveIconModeButton = document.getElementById('moveIconMode');
+moveIconModeButton.addEventListener('click', switchToMoveIconMode);
+
+const moveMapButton = document.getElementById('moveMapMode');
+moveMapButton.addEventListener('click', switchToMoveMapMode);
+
+const clearIconsButton = document.getElementById('clearIcons');
+clearIconsButton.addEventListener('click', () => {
+    icons.forEach(icon =>{
+        icon.remove();
+    });
+    icons = [];
 });
 
-document.getElementById('penMode').addEventListener('click', switchToPenMode);
-document.getElementById('moveMode').addEventListener('click', switchToMoveMode);
+// right side of menu bar
+const penModeButton = document.getElementById('penMode');
+penModeButton.addEventListener('click', switchToPenMode);
 
 const eraserButton = document.getElementById('eraserMode');
 eraserButton.addEventListener('click', switchToEraserMode);
-/*
-eraserButton.addEventListener('click', () => {
-    // toggle
-    isEraser = !isEraser;
-    if(isEraser) {
-        eraserButton.classList.add('active');
-    } else {
-        eraserButton.classList.remove('active');
-    }
-});
-*/
 
-const clearButton = document.getElementById('clear');
-clearButton.addEventListener('click', () => {
-    while(paths.length > 0) {
-        paths.pop();
-    }
-    redrawCanvas();
-});
-
-document.getElementById('undo').addEventListener('click', () => {
+const undoButton = document.getElementById('undo');
+undoButton.addEventListener('click', () => {
     if(paths.length > 0) {
         paths.pop();
         redrawCanvas();
     }
 });
 
-// initial setup defaults
+const clearPenButton = document.getElementById('clearPen');
+clearPenButton.addEventListener('click', () => {
+    while(paths.length > 0) {
+        paths.pop();
+    }
+    redrawCanvas();
+});
+
+const lineWidthMenu = document.getElementById('lineWidth');
+lineWidthMenu.addEventListener('change', (e) => {
+    lineWidth = parseInt(e.target.value);
+    switchToPenMode();
+});
+
+const lineColorMenu = document.getElementById('lineColor'); 
+lineColorMenu.addEventListener('change', (e) => {
+    lineColor = e.target.value;
+    switchToPenMode();
+});
+
+const penTypeMenu = document.getElementById('penType');
+penTypeMenu.addEventListener('change', (e) => {
+    penType = e.target.value;
+    switchToPenMode();
+});
+
+
+/* initial setup defaults ---------------------------------------- */
 bgImage.onload = () => {
     resizeCanvas();
 };
 switchToPenMode();
+
