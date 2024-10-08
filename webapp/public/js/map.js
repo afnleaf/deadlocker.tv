@@ -128,8 +128,7 @@ function handleTouchZoom(e) {
     }
     
     const zoomDamp = 0.1;
-    const zoomFactor = distance / initialDistance * zoomDamp;
-    
+    const zoomFactor = (distance / initialDistance);
     
     // get midpoint
     const midX = (t1.clientX + t2.clientX) / 2;
@@ -141,7 +140,7 @@ function handleTouchZoom(e) {
     const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
     const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
     const prevZoom = zoomLevel;
-    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomFactor));
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomDamp));
     mapOffsetX = normalizedX - mapMouseX * zoomLevel;
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
     resizeCanvas();
