@@ -127,7 +127,7 @@ function handleTouchZoom(e) {
         return;
     }
     
-    const zoomDamp = 0.005;
+    const zoomDamp = 0.05;
     const zoomFactor = Math.pow(distance / initialDistance, zoomDamp);
     //const zoomFactor = distance / initialDistance;
     
