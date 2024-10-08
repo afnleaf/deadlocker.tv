@@ -140,7 +140,7 @@ function handleTouchZoom(e) {
     const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
     const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
     const prevZoom = zoomLevel;
-    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomDamp));
+    zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prevZoom * zoomLevel));
     //zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - zoomFactor * zoomDamp));
     mapOffsetX = normalizedX - mapMouseX * zoomLevel;
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
