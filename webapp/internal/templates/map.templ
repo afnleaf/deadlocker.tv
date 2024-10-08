@@ -7,6 +7,11 @@ templ Map() {
         <div class="map-container">
             <div id="controls">
                 <div class="control-column">
+                    <a href="/">
+                        <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">
+                    </a>
+                </div>
+                <div class="control-column">
                     <div id="iconMenu"></div>
                 </div>
                 <div class="control-column">
@@ -21,36 +26,6 @@ templ Map() {
                         </div>
                     </div>
                 </div>
-                <!--
-                <div class="control-column">
-                    <label for="iconSelect"></label>
-                    <select id="iconSelect">
-                        <option value="Abrams">Abrams</option>
-                        <option value="Bebop">Bebop</option>
-                        <option value="Dynamo">Dynamo</option>
-                        <option value="GreyTalon">Grey Talon</option>
-                        <option value="Haze">Haze</option>
-                        <option value="Infernus">Infernus</option>
-                        <option value="Ivy">Ivy</option>
-                        <option value="Kelvin">Kelvin</option>
-                        <option value="LadyGeist">Lady Geist</option>
-                        <option value="Lash">Lash</option>
-                        <option value="McGinnis">McGinnis</option>
-                        <option value="Mirage">Mirage</option>
-                        <option value="Mo&Krill">Mo & Krill</option>
-                        <option value="Paradox">Paradox</option>
-                        <option value="Pocket">Pocket</option>
-                        <option value="Seven">Seven</option>
-                        <option value="Shiv">Shiv</option>
-                        <option value="Vindicta">Vindicta</option>
-                        <option value="Viscous">Viscous</option>
-                        <option value="Warden">Warden</option>
-                        <option value="Wraith">Wraith</option>
-                        <option value="Yamato">Yamato</option>
-                    </select>
-                </div>
-                <button type="button" id="addIcon">Add Icon</button>
-                -->
                 <button type="button" data-alt="f" id="delMode" class="mode-button">Delete Icon</button>
                 <button type="button" data-alt="i" id="moveIconMode" class="mode-button">Move Icon</button>
                 <button type="button" data-alt="m" id="moveMapMode" class="mode-button">Move Map</button>
@@ -86,11 +61,6 @@ templ Map() {
                         <option value="opaque">Opaque</option>
                         <option value="highlighter">Highlighter</option>
                     </select>
-                </div>
-                <div class="control-column">
-                    <a href="/">
-                        <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">
-                    </a>
                 </div>
             </div>
             <div class="canvas-container">

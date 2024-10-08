@@ -100,10 +100,6 @@ function handleWheelZoom(e) {
     const prevZoom = zoomLevel;
     zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - delta * zoomFactor));
 
-    // new dimensions of map
-    //const nW = bgImage.width * zoomLevel;
-    //const nH = bgImage.height * zoomLevel;
-
     mapOffsetX = mouseX - mapMouseX * zoomLevel;
     mapOffsetY = mouseY - mapMouseY * zoomLevel;
 
@@ -130,8 +126,10 @@ function handleTouchZoom(e) {
         initialDistance = distance;
         return;
     }
-
-    const zoomFactor = distance / initialDistance;
+    
+    const zoomDamp = 0.1;
+    const zoomFactor = distance / initialDistance * zoomDamp;
+    
     
     // get midpoint
     const midX = (t1.clientX + t2.clientX) / 2;
@@ -167,6 +165,7 @@ function handleTouchEnd(e) {
 
 function updateMapPosition() {
     mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    // we might implement this in the future but it needs other fixes
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
 
@@ -210,13 +209,14 @@ function stopDraggingMap() {
 function addIcon(iconName, side, x = 100, y = 100) {
     let teamColor = '';
     if(side === 'amber') {
-        teamColor = 'rgba(221, 179, 92, 1)';
+        teamColor = 'rgba(221, 179, 92, 0.8)';
     } else if(side === 'sapphire') {
-        teamColor = 'rgba(95, 118, 227, 1)'
+        teamColor = 'rgba(95, 118, 227, 0.8)'
     }
     const icon = document.createElement('img');
     //icon.src = `public/images/hero_icons/pixel/${iconName}.png`;
-    icon.src = `public/images/hero_icons/${iconName}.png`;
+    //icon.src = `public/images/hero_icons/emoji/${iconName}.png`;
+    icon.src = `public/images/hero_icons/default/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
     icon.style.left = `${x-25}px`;
@@ -227,6 +227,7 @@ function addIcon(iconName, side, x = 100, y = 100) {
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
     icon.style.background = teamColor;
+    icon.style.border = '2px solid black';
     // event listeners
     icon.addEventListener('mousedown', (e) => {
         if(currentMode === 'map') {
@@ -321,10 +322,11 @@ iconNames.forEach(iconName => {
 
 function createDraggableIcon(iconName) {
     const icon = document.createElement('img');
-    icon.src = `/public/images/hero_icons/${iconName}.png`;
+    //icon.src = `/public/images/hero_icons/${iconName}.png`;
+    icon.src = `/public/images/hero_icons/default/${iconName}.png`;
     icon.classsName = 'menu-icon';
-    icon.style.width = '30px';
-    icon.style.height = '30px';
+    icon.style.width = '25px';
+    icon.style.height = '25px';
     icon.style.cursor = 'grab';
     icon.draggable = true;
     icon.dataset.icon = iconName;
@@ -630,11 +632,6 @@ function addIconGet() {
 /* control panel event listeners --------------------------------- */
 
 // left side of menu bar
-/*
-const addIconButton = document.getElementById('addIcon'); 
-addIconButton.addEventListener('click', addIconGet);
-*/
-
 const deleteIconButton = document.getElementById('delMode');
 deleteIconButton.addEventListener('click', switchToDelIconMode);
 
@@ -684,12 +681,6 @@ document.addEventListener('keydown', checkKeydown);
 function checkKeydown(e) {
     //console.log(e.key);
     switch(e.key) {
-        /*
-        // add icon
-        case 'a':
-            addIconGet();
-            break;
-        */
         // delete icon
         case 'f':
             switchToDelIconMode();
