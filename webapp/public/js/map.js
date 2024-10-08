@@ -336,6 +336,8 @@ function createDraggableIcon(iconName) {
         e.dataTransfer.setData('text/plain', iconName);
     });
 
+
+
     return icon;
 }
 

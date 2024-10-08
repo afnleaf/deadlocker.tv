@@ -2,15 +2,20 @@
 
 //let x represent 1 minute of time or 60s
 // unit base value
-const trooper_base0 = 76;
-const trooper_base10 = 104;
+//const trooper_base0 = 76;
+//const trooper_base10 = 104;
+const trooper_base0 = 75;
+const trooper_base10 = 90;
 const sjungle_base = 44;
 const mjungle_base = 88;
 const ljungle_base = 220;
 const sinners_base = 300;
 // unit scale
-const trooper_scale0 = 1.0; 
-const trooper_scale10 = 2.0;
+//const trooper_scale0 = 1.0; 
+//const trooper_scale10 = 2.0;
+const trooper_scale0 = 1.1; 
+const trooper_scale5 = 1.0; 
+const trooper_scale10 = 1.24;
 const sjungle_scale = 0.528;
 const mjungle_scale = 1.06;
 const ljungle_scale = 2.64;
@@ -27,12 +32,24 @@ const shrines_base = 500;
 const urn_base = 3500;
 const urn_increase = 1000;
 const urn_carrier_scale = 1.25;
+const crate_base = 36;
+const crate_scale = 3;
+const kill_base = 225;
+const kill_scale = 26;
 // spawn times
 const spawn_small = 2;
+const spawn_crate = 3;
 const spawn_camps = 7;
 const spawn_final = 10;
 
 // individual units
+function calcTrooper(x) {
+    const base = x < spawn_final ? trooper_base0 : trooper_base10;
+    const scale = x < spawn_final ? trooper_scale0 * x : trooper_scale10 * x;
+    const increment = Math.floor((x - 10) / 5);
+    return base + (scale) + (trooper_scale5 * increment);
+}
+
 function calcSmallJungle(x) {
     return sjungle_base + sjungle_scale * x;
 }
@@ -48,6 +65,15 @@ function calcLargeJungle(x) {
 function calcSinners(x) {
     if (x < spawn_final) return NaN;
     return sinners_base + sinners_scale * x;
+}
+
+function calcCrate(x) {
+    if(x < spawn_crate) return NaN;
+    return crate_base + crate_scale * x;
+}
+
+function calcKill(x) {
+    return kill_base + kill_scale * x;
 }
 
 // objectives
@@ -75,11 +101,17 @@ function calcUrn(x) {
 }
 
 // combined units
+//
+function calcTrooperWave(x) {
+    return calcTrooper(x) * 4;
+}
+/*
 function calcTrooperWave(x) {
     const base = x < spawn_final ? trooper_base0 : trooper_base10;
     const scale = x < spawn_final ? trooper_scale0 * x : trooper_scale10 * x;
     return (base + scale) * 4;
 }
+*/
 
 function calcSmallCamp(x) {
     if (x < spawn_small) return NaN;
@@ -121,7 +153,8 @@ function calcGarage(x) {
     return (calcMediumJungle(x) * 3) + (calcSmallJungle(x) * 2);
 }
 
-function generateData() {
+// souls per time
+function generateSoulsTime() {
     const data = [];
     for (let x = 0; x <= 60; x++) {
         data.push({
@@ -139,6 +172,8 @@ function generateData() {
             smallJungle: calcSmallJungle(x),
             medJungle: calcMediumJungle(x),
             largeJungle: calcLargeJungle(x),
+            crate: calcCrate(x),
+            kill: calcKill(x),
             urn: calcUrn(x),
             guardiansTeam: calcGuardian(),
             guardiansDeny: calcGuardianDeny(),
@@ -150,8 +185,8 @@ function generateData() {
     return data;
 }
 
-// souls divided by hp
-function generateData2() {
+// souls divided by hp per time
+function generateSoulsHpTime() {
     const data = [];
     for (let x = 0; x <= 60; x++) {
         data.push({
@@ -169,13 +204,14 @@ function generateData2() {
             smallJungle: calcSmallJungle(x) / 200,
             medJungle: calcMediumJungle(x) / 500,
             largeJungle: calcLargeJungle(x) / 1760,
+            crate: calcCrate(x) / 1
         });
     }
     return data;
 }
 
-const data = generateData();
-const data2 = generateData2();
+const soulsTime = generateSoulsTime();
+const soulsHpTime = generateSoulsHpTime();
 
 // color, hidden, label
 const lineProperties = {
@@ -187,11 +223,13 @@ const lineProperties = {
     medJungle:      ["#1565C0", true, "Med Jungle x1"],
     largeCamp:      ["#AB47BC", false, "Ancients"],
     largeJungle:    ["#6A1B9A", true, "Large Jungle x1"],
-    basement:       ["#B71C1C", false, "Basement"],
+    basement:       ["#D8C27D", false, "Basement"], 
     aboveBoss:      ["#F06292", false, "Camp Above Mid-boss"],
     midStore:       ["#FFA726", false, "Mid Store Camp"],
     church:         ["#8D6E63", false, "Church Camp"],
     garage:         ["#78909C", false, "Garage Camp"],
+    crate:          ["#614B34", true, "Crate (40%)"],
+    kill:           ["#9D0100", true, "Hero Kill"],
     urn:            ["#1DC7D6", true, "Urn"],
     guardiansTeam:  ["#BDBDBD", true, "Guardians Team Max"],
     guardiansDeny:  ["#BDB093", true, "Guardians Deny"],
@@ -282,7 +320,7 @@ const createChartConfig = (data, properties, chartTitle, xAxisTitle, yAxisTitle)
                      label: (context) => {
                          let value = context.formattedValue;
                          let datasetLabel = context.dataset.label;
-                         return `${datasetLabel}: ${value} souls`;
+                         return `${datasetLabel}: ${value} ${yAxisTitle}`;
                      },
                      title: (tooltipItems) => {
                         return `Time: ${tooltipItems[0].label} minutes`;
@@ -326,7 +364,7 @@ const ctx2 = document.getElementById('time-souls-per-hp').getContext('2d');
 const chart1 = new Chart(
     ctx1, 
     createChartConfig(
-        data, 
+        soulsTime, 
         lineProperties, 
         'Unit Souls Over Time',
         'Time (minutes)',
@@ -336,7 +374,7 @@ const chart1 = new Chart(
 const chart2 = new Chart(
     ctx2, 
     createChartConfig(
-        data2, 
+        soulsHpTime, 
         lineProperties, 
         'Unit Souls/HP Over Time',
         'Time (minutes)',
@@ -360,5 +398,5 @@ function resizeChart() {
 
 resizeChart();
 
-window.addEventListener('resize', () => resizeChart());
+window.addEventListener('resize', resizeChart);
 
