@@ -128,7 +128,8 @@ function handleTouchZoom(e) {
     }
     
     const zoomDamp = 1;
-    const zoomFactor = Math.pow(distance / initialDistance, zoomDamp);
+    //const zoomFactor = Math.pow(distance / initialDistance, zoomDamp);
+    const zoomFactor = distance / initialDistance;
     
     // get midpoint
     const midX = (t1.clientX + t2.clientX) / 2;
