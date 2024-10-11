@@ -14,6 +14,8 @@ func main() {
     http.Handle("/", handlers.IndexHandler())
     http.Handle("/farm", handlers.FarmHandler())
     http.Handle("/map", handlers.MapHandler())
+    http.Handle("/commands", handlers.CommandsHandler())
+    //http.Handle("/articles/", handlers.ArticlesHandler())
 
     // serve static files
     fs := http.FileServer(http.Dir("./public"))

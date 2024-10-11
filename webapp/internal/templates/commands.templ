@@ -1,0 +1,12 @@
+// commands.templ
+
+package templates
+
+templ Commands(content string) {
+    @Base("commands") {
+        <div class="md-commands">
+            @templ.Raw(content)
+        </div>
+		<script type="module" src="/public/js/commands.js"></script>
+    }
+}

@@ -3,9 +3,14 @@
 package handlers
 
 import (
+    //"fmt"
     "net/http"
+    "os"
+    //"path/filepath"
+    //"strings"
 
     "weblock/internal/templates"
+    "github.com/gomarkdown/markdown"
 )
 
 func IndexHandler() http.HandlerFunc {
@@ -23,5 +28,21 @@ func FarmHandler() http.HandlerFunc {
 func MapHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		templates.Map().Render(r.Context(), w)
+	}
+}
+
+func CommandsHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+        message := "<h1>test<n1>"
+        //path := strings.TrimPrefix(r.URL.Path, "/md/commands.md")
+        content, err := os.ReadFile("./md/commands.md")
+        //fmt.Println(content)
+        if(err != nil) {
+            http.NotFound(w, r)
+            return
+        }
+        message = string(markdown.ToHTML(content, nil, nil))
+        //fmt.Println(string(content))
+        templates.Commands(string(message)).Render(r.Context(), w)
 	}
 }

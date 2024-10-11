@@ -22,7 +22,8 @@ COPY . .
 
 
 # generate Go code from templ files and clean up
-RUN templ generate && go mod tidy
+RUN templ generate
+RUN go mod tidy
 
 # build the Go app
 RUN go build -o main ./cmd/server
@@ -39,6 +40,9 @@ COPY --from=build /app/main ./
 
 # copy the static assets from public
 COPY --from=build /app/public ./public
+
+# copy the markdown assets
+COPY --from=build /app/md ./md
 
 # expose the port the webserver will run on
 EXPOSE 4444

@@ -20,18 +20,58 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     font-family: Roboto, sans-serif;
     background-color: var(--night-2);
     color: var(--khaki);
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
 }
+
+/* index --------------------------------------------------------- */
+.index {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 10px auto;
+}
+
+#link-block {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* commands ------------------------------------------------------ */
+.md-commands {
+    display: flex;
+    justify-content: center;
+    align-items: left;
+    flex-direction: column;
+    margin: 10px auto;
+    width: 80%;
+    max-width: 1200px;
+    overflow-wrap: break-word;
+}
+
+code {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.9em;
+    color; var(--dutch-white)
+}
+
+pre {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+    background-color: var(--smoky-black);
+    border: 1px solid var(--kobicha);
+    border-radius: 4px;
+    padding: 1em;
+    margin: 0.5em 0;
+    overflow-x: auto;
+}
+
 
 /* farm ---------------------------------------------------------- */
 

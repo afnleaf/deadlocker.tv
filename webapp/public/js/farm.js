@@ -29,7 +29,7 @@ const walkers_orbs = 450;
 //const walkers_team = 3750;
 const shrines_base = 500;
 //const shrines_team = 3000;
-const urn_base = 3500;
+const urn_base = 4025;
 const urn_increase = 1000;
 const urn_carrier_scale = 1.25;
 const crate_base = 36;
@@ -38,9 +38,12 @@ const kill_base = 225;
 const kill_scale = 26;
 // spawn times
 const spawn_small = 2;
-const spawn_crate = 3;
-const spawn_camps = 7;
-const spawn_final = 10;
+const spawn_medium = 5;
+const spawn_hard = 8;
+const spawn_crate = 2;
+//const spawn_camps = 7;
+const spawn_final = 8;
+const spawn_urn = 10;
 
 // individual units
 function calcTrooper(x) {
@@ -95,7 +98,7 @@ function calcWalkerDeny() {
 
 // urn
 function calcUrn(x) {
-    if(x < spawn_final) return NaN;
+    if(x < spawn_urn) return NaN;
     const increment = Math.floor((x - 10) / 5);
     return (urn_base + (urn_increase * increment));
 }
@@ -119,37 +122,37 @@ function calcSmallCamp(x) {
 }
 
 function calcMediumCamp(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_medium) return NaN;
     return calcMediumJungle(x) * 3;
 }
 
 function calcLargeCamp(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_hard) return NaN;
     return calcLargeJungle(x) * 3;
 }
 
 function calcBasement(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_medium) return NaN;
     return (calcMediumJungle(x) * 2) + (calcSmallJungle(x) * 5);
 }
 
 function calcAboveBoss(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_hard) return NaN;
     return calcLargeJungle(x) + calcMediumJungle(x) + calcSmallJungle(x);
 }
 
 function calcMidStore(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_medium) return NaN;
     return calcMediumJungle(x) + (calcSmallJungle(x) * 3);
 }
 
 function calcChurch(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_medium) return NaN;
     return calcMediumJungle(x) + (calcSmallJungle(x) * 4);
 }
 
 function calcGarage(x) {
-    if (x < spawn_camps) return NaN;
+    if (x < spawn_medium) return NaN;
     return (calcMediumJungle(x) * 3) + (calcSmallJungle(x) * 2);
 }
 
