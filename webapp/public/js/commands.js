@@ -11,7 +11,7 @@ codeTags.forEach((codeTag, index) => {
     copyButton.setAttribute('data-index', index);
 
     // insert button after code tag
-    codeTag.parentNode.insertAfter(copyButton, codeTag.nextSibling);
+    codeTag.parentNode.insertBefore(copyButton, codeTag.nextSibling);
 
     // add click event listener
     copyButton.addEventListener('click', () => {

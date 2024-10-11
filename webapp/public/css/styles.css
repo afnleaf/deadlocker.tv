@@ -59,6 +59,7 @@ code {
 }
 
 pre {
+    position: relative;
     white-space: pre-wrap;
     white-space: -moz-pre-wrap;
     white-space: -pre-wrap;
@@ -72,6 +73,12 @@ pre {
     overflow-x: auto;
 }
 
+button.copy-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 4px;
+}
 
 /* farm ---------------------------------------------------------- */
 
@@ -239,7 +246,7 @@ button.active {
     color: var(--dutch-white);
 }
 
-button::after {
+button.tooltip-button::after {
     content: attr(data-alt);
     opacity: 0;
     position: absolute;
@@ -253,11 +260,11 @@ button::after {
     z-index: 1;
 }
 
-button:hover::after {
+button.tooltip-button:hover::after {
     animation: showToolTip 1s forwards;
 }
 
-button:not(:hover)::after {
+button.tooltip-button:not(:hover)::after {
     animation: hideToolTip 0.05s forwards;
 }
 
