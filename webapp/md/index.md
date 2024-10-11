@@ -10,15 +10,15 @@ The mission of this website is to host or link to various resources that are use
 - [Console Commands](/commands)
 
 ## External apps
-- [Patch Notes](https://forums.playdeadlock.com/forums/changelog.10/)
-- [Draft Rooms](https://deadlock.guide/)
-- [Advanced Movement Guide](https://docs.google.com/document/d/1yfPHJsMrKcg_8wqa95qu0sOFxRdzKLF_eUWOZX7RLHc/edit?tab=t.0#heading=h.aljsuq1syn2s)
-- [Crosshair Customizer](https://mcipenuks.github.io/deadlock-crosshair/)
-- [Sensitivity Calculator](https://aiming.pro/mouse-sensitivity-calculator/deadlock)
-- [Deadlock Wiki](https://deadlocked.wiki/)
-- [Liquipedia](https://liquipedia.net/deadlock/Main_Page)
+- <a href="https://forums.playdeadlock.com/forums/changelog.10/" target="_blank">Patch Notes</a>
+- <a href="https://deadlock.guide/" target="_blank">Draft Rooms</a>
+- <a href="https://docs.google.com/document/d/1yfPHJsMrKcg_8wqa95qu0sOFxRdzKLF_eUWOZX7RLHc/edit?tab=t.0#heading=h.aljsuq1syn2s" target="_blank">Advanced Movement Guide</a>
+- <a href="https://mcipenuks.github.io/deadlock-crosshair/" target="_blank">Crosshair Customizer</a>
+- <a href="https://aiming.pro/mouse-sensitivity-calculator/deadlock" target="_blank">Sensitivity Calculator</a>
+- <a href="https://deadlocked.wiki/" target="_blank">Deadlock Wiki</a>
+- <a href="https://liquipedia.net/deadlock/Main_Page" target="_blank">Liquipedia</a>
 
-## under construction
+## Under construction
 - [Articles](/articles)
 - [Builds](/builds)
 
