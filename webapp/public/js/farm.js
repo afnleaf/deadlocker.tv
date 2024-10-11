@@ -388,7 +388,7 @@ const chart2 = new Chart(
 function resizeChart() { 
     const scrollbarH = window.innerWidth - document.documentElement.cientWidth;
     const w = `${window.innerWidth - scrollbarH}px`;
-    const h = `${window.innerHeight - 20}px`
+    const h = `${window.innerHeight - 50}px`
     const c1 = document.getElementById("chart1");
     const c2 = document.getElementById("chart2");
     c1.style.width = w; 

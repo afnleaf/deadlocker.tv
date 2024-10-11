@@ -3,9 +3,11 @@
 package templates
 
 templ Commands(content string) {
-    @Base("commands") {
-        <div class="md-commands">
-            @templ.Raw(content)
+    @Base("commands", true, true) {
+        <div class="content-container">
+            <div class="md-commands">
+                @templ.Raw(content)
+            </div>
         </div>
 		<script type="module" src="/public/js/commands.js"></script>
     }

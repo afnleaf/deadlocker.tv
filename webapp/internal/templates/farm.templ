@@ -3,13 +3,15 @@
 package templates
 
 templ Farm() {
-    @Base("farmlock") {
-        <div id="chart1" class="chart-container">
-			<canvas id="time-souls"></canvas>
-		</div>
-		<div id="chart2" class="chart-container">
-			<canvas id="time-souls-per-hp"></canvas>
-		</div>
+    @Base("farmlock", true, true) {
+        <div class="content-container">
+            <div id="chart1" class="chart-container">
+		    	<canvas id="time-souls"></canvas>
+		    </div>
+		    <div id="chart2" class="chart-container">
+		    	<canvas id="time-souls-per-hp"></canvas>
+		    </div>
+        </div>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 		<script type="module" src="/public/js/farm.js"></script>
     }

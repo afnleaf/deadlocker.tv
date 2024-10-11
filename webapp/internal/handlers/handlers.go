@@ -13,9 +13,23 @@ import (
     "github.com/gomarkdown/markdown"
 )
 
+func renderMarkdown(filePath string) (string, error) {
+    content, err := os.ReadFile(filePath)
+    if(err != nil) { 
+        return "", err
+    }
+    message := string(markdown.ToHTML(content, nil, nil))
+    return message, nil
+}
+
 func IndexHandler() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        templates.Index().Render(r.Context(), w)
+        content, err := renderMarkdown("./md/index.md")
+        if(err != nil) {
+            http.NotFound(w, r)
+            return
+        }
+        templates.Commands(content).Render(r.Context(), w)
     }
 }
 
@@ -33,16 +47,22 @@ func MapHandler() http.HandlerFunc {
 
 func CommandsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        message := "<h1>test<n1>"
-        //path := strings.TrimPrefix(r.URL.Path, "/md/commands.md")
-        content, err := os.ReadFile("./md/commands.md")
-        //fmt.Println(content)
+        //message := "<h1>test<n1>"
+        ////path := strings.TrimPrefix(r.URL.Path, "/md/commands.md")
+        //content, err := os.ReadFile("./md/commands.md")
+        ////fmt.Println(content)
+        //if(err != nil) {
+        //    http.NotFound(w, r)
+        //    return
+        //}
+        //message = string(markdown.ToHTML(content, nil, nil))
+        ////fmt.Println(string(content))
+        //templates.Commands(string(message)).Render(r.Context(), w)
+        content, err := renderMarkdown("./md/commands.md")
         if(err != nil) {
             http.NotFound(w, r)
             return
         }
-        message = string(markdown.ToHTML(content, nil, nil))
-        //fmt.Println(string(content))
-        templates.Commands(string(message)).Render(r.Context(), w)
+        templates.Commands(content).Render(r.Context(), w)
 	}
 }
