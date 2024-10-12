@@ -1,4 +1,4 @@
-# Ducklock
+# Resources
 
 The mission of this website is to host or link to various resources that are useful for competitive Deadlock players.
 
@@ -23,4 +23,4 @@ The mission of this website is to host or link to various resources that are use
 - [Builds](/builds)
 
 ### How to contribute
-We have a [public repo](https://github.com/afnleaf/weblock) where you can submit markdown files and they will automatically render within the articles section. Others ways of contributing that are use friendly and not github pull requests: not sure yet. If you wish to contact the mainter of the website please reach out to afnleaf on [twitter](https://x.com/afnckingleaf), [email](mailto:afnleafow@gmail.com), or discord @afnckingleaf.
+We have a [public repo](https://github.com/afnleaf/weblock) where you can submit markdown files and they will automatically render within the articles section. Others ways of contributing that are use friendly and not github pull requests: not sure yet. If you wish to contact the maintainer of this website please reach out to afnleaf on [twitter](https://x.com/afnckingleaf), [email](mailto:afnleafow@gmail.com), or discord @afnckingleaf.

@@ -1,14 +1,13 @@
-// commands.templ
+// resources.templ
 
 package templates
 
-templ Commands(content string) {
+templ Resources(content string) {
     @Base(true, true) {
         <div class="content-container">
-            <div class="md-commands">
+            <div class="resources">
                 @templ.Raw(content)
             </div>
         </div>
-		<script type="module" src="/public/js/commands.js"></script>
     }
 }

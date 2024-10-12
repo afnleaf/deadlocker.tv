@@ -2,12 +2,18 @@
 
 package templates
 
-templ Index(content string) {
-    @Base("weblock", true, true) {
+templ Index() {
+    @Base(true, true) {
         <div class="content-container">
-            <div class="index">
-                @templ.Raw(content)
+            <div id="twitch-embed"></div>
+            <div>
+                Row of links to click on (CLIPS?)
+            </div>
+            <div>
+                Youtube channel.
             </div>
         </div>
+        <script src="https://embed.twitch.tv/embed/v1.js"></script>
+		<script type="module" src="/public/js/index.js"></script>
     }
 }
