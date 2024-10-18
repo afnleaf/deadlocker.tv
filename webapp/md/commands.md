@@ -37,28 +37,28 @@ This command lets you adjust the gap the crosshair. Allows for negative values w
 
 ### sensitivity
 ```
-sensitivity "0.99"
-zoom_sensitivity_ratio "0.818933027098955175"
+sensitivity "0.99";
+zoom_sensitivity_ratio "0.818933027098955175";
 ```
 Let's you customize your sensitivity with more precision than the settings menu allows for. The provided zoom sensitivity ration will give you a 1:1 ratio between normal and zoomed modes. 
 
 
 ### movement
 ```
-alias +duckjump "+duck;+in_mantle"
-alias -duckjump "-duck;-in_mantle"
-bind space +duckjump
-bind mwheeldown "+in_mantle"
+alias +duckjump "+duck;+in_mantle";
+alias -duckjump "-duck;-in_mantle";
+bind space +duckjump;
+bind mwheeldown "+in_mantle";
 ```
 Binds mouse wheel down to jump and allows you to use space for mantle only. This leads to no accidental stamina used for double jump
 
 
 ### FPS
 ```
-fps_max 240
-fps_max_tools 120
-fps_max_ui 120
-engine_low_latency_sleep_after_client_tick "true"
+fps_max 240;
+fps_max_tools 120;
+fps_max_ui 120;
+engine_low_latency_sleep_after_client_tick "true";
 ```
 
 ### Nvidia Low Latency
@@ -168,9 +168,9 @@ bind "X" toggle hud_damagemeter 1 0
 Turns dps meter on / off.
 
 ```
-citadel_hero_testing_enabled 1
-citadel_crate_respawn_interval 0
-citadel_allow_duplicate_heroes 1
+citadel_hero_testing_enabled 1;
+citadel_crate_respawn_interval 0;
+citadel_allow_duplicate_heroes 1;
 ```
 
 ```
