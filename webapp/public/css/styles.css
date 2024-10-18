@@ -23,7 +23,10 @@ html, body {
 }
 
 body {
-    flex: direction: column;
+    /*
+    display: flex;
+    flex-direction: column;
+    */
     min-height: 100vh;
     font-family: Roboto, sans-serif;
     background-color: var(--night-2);
@@ -32,6 +35,11 @@ body {
 }
 
 main {
+    /*
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    */
     min-height: 94vh;
 }
 
@@ -99,6 +107,7 @@ header {
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 header nav ul {
@@ -155,6 +164,52 @@ footer p {
 #link-block {
     display: flex;
     flex-direction: column;
+}
+
+.video-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px); /* Adjust based on your header, footer, and any margins */
+    margin: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#twitch-embed {
+    flex: 1;
+    min-height: 0;
+    /*
+    width: 100%;
+    height: 100%;
+    */
+}
+
+#twitch-controls {
+    padding: 4px;
+    background-color: var(--smoky-black-2);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#toggle-chat {
+    background-color: var(--smoky-black);
+    color: var(--khaki);
+    border: 1px solid var(--kobicha);
+    padding 4px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#toggle-chat:hover {
+    background-color: var(--kobicha);
+    color: var(--dutch-white);
+}
+
+#twitch-embed iframe {
+    width: 100%;
+    height: 100%;
 }
 
 

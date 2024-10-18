@@ -5,12 +5,11 @@ package templates
 templ Index() {
     @Base(true, true) {
         <div class="content-container">
-            <div id="twitch-embed"></div>
-            <div>
-                Row of links to click on (CLIPS?)
-            </div>
-            <div>
-                Youtube channel.
+            <div class="video-container">
+                <div id="twitch-embed"></div>
+                <div id="twitch-controls">
+                    <button id="toggle-chat">Hide Chat</button>
+                </div>
             </div>
         </div>
         <script src="https://embed.twitch.tv/embed/v1.js"></script>
