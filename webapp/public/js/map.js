@@ -33,6 +33,9 @@ let isDraggingMap = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 let initialDistance = 0;
+// relative icon
+let iconScale = 1;
+const ICON_BASE_SIZE = 50;
 
 /* all layers ---------------------------------------------------- */
 
@@ -55,13 +58,16 @@ function resizeCanvas() {
     drawBackground();
     redrawCanvas();
     updateMapPosition();
+    updateIcons();
     
+    /*
     icons.forEach(icon => {
         const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / mapLayer.width;
         const topPercent = (parseInt(icon.style.top) - mapOffsetY) / mapLayer.height;
         icon.style.left = `${leftPercent * mapLayer.width + mapOffsetX}px`; 
         icon.style.top = `${topPercent * mapLayer.height + mapOffsetY}px`;
     });
+    */
 }
 
 function getEventPos(canvas, e) {
@@ -93,6 +99,8 @@ function handleWheelZoom(e) {
     // mouse pos relative to map content
     const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
     const mapMouseY = (mouseY - mapOffsetY) / zoomLevel;
+    //const mapMouseX = (mouseX * mapLayer.width - mapOffsetX) / zoomLevel;
+    //const mapMouseY = (mouseY * mapLayer.height - mapOffsetY) / zoomLevel;
 
     const delta = Math.sign(e.deltaY);
     const zoomFactor = 0.1;
@@ -102,9 +110,12 @@ function handleWheelZoom(e) {
 
     mapOffsetX = mouseX - mapMouseX * zoomLevel;
     mapOffsetY = mouseY - mapMouseY * zoomLevel;
+    //mapOffsetX = mouseX * mapLayer.width - mapMouseX * zoomLevel;
+    //mapOffsetY = mouseY * mapLayer.height - mapMouseY * zoomLevel;
 
     resizeCanvas();
     updateMapPosition();
+    updateIcons();
     switchToMoveMapMode();
 }
 
@@ -147,6 +158,7 @@ function handleTouchZoom(e) {
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
     resizeCanvas();
     updateMapPosition();
+    updateIcons();
     switchToMoveMapMode();
 }
 
@@ -168,6 +180,7 @@ function updateMapPosition() {
     mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     // we might implement this in the future but it needs other fixes
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    //drawingLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
 
 function drawBackground() {
@@ -207,6 +220,26 @@ function stopDraggingMap() {
 
 /* icon layer ---------------------------------------------------- */
 
+function updateIcons() {
+    iconScale = zoomLevel;
+    icons.forEach(icon => {
+        const leftPercent = (parseFloat(icon.dataset.mapX) * mapLayer.width + mapOffsetX) / iconLayer.width;
+        const topPercent = (parseFloat(icon.dataset.mapY) * mapLayer.height + mapOffsetY) / iconLayer.height;
+        icon.style.left = `${leftPercent * 100}%`;
+        icon.style.top = `${topPercent * 100}%`;
+        icon.style.width = `${ICON_BASE_SIZE * iconScale}px`;
+        icon.style.height = `${ICON_BASE_SIZE * iconScale}px`;
+    });
+    /*
+    icons.forEach(icon => {
+        const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / mapLayer.width;
+        const topPercent = (parseInt(icon.style.top) - mapOffsetY) / mapLayer.height;
+        icon.style.left = `${leftPercent * mapLayer.width + mapOffsetX}px`; 
+        icon.style.top = `${topPercent * mapLayer.height + mapOffsetY}px`;
+    });
+    */
+}
+
 function addIcon(iconName, side, x = 100, y = 100) {
     let teamColor = '';
     if(side === 'amber') {
@@ -220,10 +253,15 @@ function addIcon(iconName, side, x = 100, y = 100) {
     icon.src = `public/images/hero_icons/default/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
-    icon.style.left = `${x-25}px`;
-    icon.style.top = `${y-25}px`;
-    icon.style.width = '50px';
-    icon.style.height = '50px';
+    //icon.style.left = `${x-25}px`;
+    //icon.style.top = `${y-25}px`;
+    //icon.style.width = '50px';
+    //icon.style.height = '50px';
+    // position of icon relative to map
+    icon.dataset.mapX = ((x - mapOffsetX) / mapLayer.width).toString();
+    icon.dataset.mapY = ((y - mapOffsetY) / mapLayer.height).toString();
+    icon.style.width = `${ICON_BASE_SIZE * iconScale}px`;
+    icon.style.height = `${ICON_BASE_SIZE * iconScale}px`;
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -253,6 +291,7 @@ function addIcon(iconName, side, x = 100, y = 100) {
     // add to layer
     iconLayer.appendChild(icon);
     icons.push(icon);
+    updateIcons();
     switchToMoveIconMode();
 }
 
@@ -303,15 +342,21 @@ function drag(e) {
         return;
     }
 
-    let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
-    let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    //let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
+    //let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    let newX = (clientX - rect.left) - iconLayer.clientWidth;
+    let newY = (clientY - rect.top) - iconLayer.clientHeight;
     
     // constrain the icon within the map layer
-    newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
-    
-    draggedIcon.style.left = `${newX}px`;
-    draggedIcon.style.top = `${newY}px`;
+    //newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
+    //newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
+    draggedIcon.dataset.mapX = ((newX * iconLayer.width - mapOffsetX) / mapLayer.width).toString();
+    draggedIcon.dataset.mapY = ((newY * iconLayer.height - mapOffsetY) / mapLayer.height).toString();
+
+    //draggedIcon.style.left = `${newX}px`;
+    //draggedIcon.style.top = `${newY}px`;
+    draggedIcon.style.left = `${newX * 100}%`;
+    draggedIcon.style.top = `${newY * 100}%`;
 }
 
 const iconMenu = document.getElementById('iconMenu');

@@ -2,21 +2,26 @@
 from here https://forums.playdeadlock.com/threads/dead-air-how-to-make-a-config-useful-commands-simple-guide.15718/
 
 
-### solo streets mode with cheats
+### Solo streets mode with cheats
 ```
-map dl_streets; sv_cheats 1; citadel_hero_testing_enabled true; selecthero hero_inferno; citadel_allow_purchasing_anywhere true; citadel_hero_testing_infinite_money true
+map dl_streets;
+sv_cheats 1;
+citadel_hero_testing_enabled true;
+selecthero hero_inferno;
+citadel_allow_purchasing_anywhere true;
+citadel_hero_testing_infinite_money true;
 ```
 This combination of commands loads you into the map with cheats enabled, allowing you to explore freely and buy whatever items you wish from anywhere.
 
 
-### cheats
+### Cheats
 ```
 sv_cheats 1;
 ```
 Or 0 for cheats off.
 
 
-### change region
+### Change region
 ```
 citadel_region_override
 ```
@@ -28,14 +33,14 @@ citadel_hud_visible
 ```
 
 
-### crosshair
+### Crosshair
 ```
 citadel_crosshair_pip_gap
 ```
 This command lets you adjust the gap the crosshair. Allows for negative values which is impossible to do in the settings.
 
 
-### sensitivity
+### Sensitivity
 ```
 sensitivity "0.99";
 zoom_sensitivity_ratio "0.818933027098955175";
@@ -43,7 +48,7 @@ zoom_sensitivity_ratio "0.818933027098955175";
 Let's you customize your sensitivity with more precision than the settings menu allows for. The provided zoom sensitivity ration will give you a 1:1 ratio between normal and zoomed modes. 
 
 
-### movement
+### Movement
 ```
 alias +duckjump "+duck;+in_mantle";
 alias -duckjump "-duck;-in_mantle";
