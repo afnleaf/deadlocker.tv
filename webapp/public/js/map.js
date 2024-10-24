@@ -3,10 +3,11 @@
 // content elements
 const container = document.querySelector('.canvas-container');
 const dragLayer = document.getElementById('dragLayer');
+const mapCanvas = document.getElementById('mapCanvas');
 const mapLayer = document.getElementById('mapLayer');
 const iconLayer = document.getElementById('iconLayer');
 const drawingLayer = document.getElementById('drawingLayer');
-const mapCtx = mapLayer.getContext('2d');
+const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingLayer.getContext('2d');
 const bgImage = new Image();
 let currentMode = 'pen';
@@ -36,77 +37,68 @@ let lastMouseY = 0;
 let initialDistance = 0;
 
 /* all layers ---------------------------------------------------- */
-
 function resizeCanvas() {
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+    const containerWidth = container.clientWidth * 2;
+    const containerHeight = container.clientHeight * 2;
+    //const containerWidth = window.innerWidth;
+    //const containerHeight = window.innerHeight;
 
     dragLayer.width = containerWidth;
     dragLayer.height = containerHeight;
     dragLayer.style.width = `${containerWidth}px`;
     dragLayer.style.height = `${containerHeight}px`;
     
-    mapLayer.width = bgImage.width * zoomLevel;
-    mapLayer.height = bgImage.height * zoomLevel;
+    mapLayer.width = bgImage.width * 2 * zoomLevel;
+    mapLayer.height = bgImage.height * 2 * zoomLevel;
     mapLayer.style.width = `${mapLayer.width}px`;
     mapLayer.style.height = `${mapLayer.height}px`;
-
-    iconLayer.width = bgImage.width * zoomLevel;
-    iconLayer.height = bgImage.height * zoomLevel;
+    
+    iconLayer.width = containerWidth * 2 * zoomLevel;
+    iconLayer.height = containerHeight * 2 * zoomLevel;
     iconLayer.style.width = `${iconLayer.width}px`;
     iconLayer.style.height = `${iconLayer.height}px`;
     
+    mapCanvas.width = bgImage.width * zoomLevel;
+    mapCanvas.height = bgImage.height * zoomLevel;
+    mapCanvas.style.width = `${mapCanvas.width}px`;
+    mapCanvas.style.height = `${mapCanvas.height}px`;
+   
     /*
-    iconLayer.width = containerWidth;
-    iconLayer.height = containerHeight;
+    iconLayer.width = containerWidth * zoomLevel;
+    iconLayer.height = containerHeight * zoomLevel;
     iconLayer.style.width = `${containerWidth}px`;
     iconLayer.style.height = `${containerHeight}px`;
     */
+
     drawingLayer.width = containerWidth;
     drawingLayer.height = containerHeight;
     drawingLayer.style.width = `${containerWidth}px`;
     drawingLayer.style.height = `${containerHeight}px`;
    
-    /*
-    mapLayer.width = bgImage.width * zoomLevel;
-    mapLayer.height = bgImage.height * zoomLevel;
-    mapLayer.style.width = `${mapLayer.width}px`;
-    mapLayer.style.height = `${mapLayer.height}px`;
+    // Store original map dimensions
+    const originalMapWidth = iconLayer.width;
+    const originalMapHeight = iconLayer.height;
 
-    iconLayer.width = bgImage.width * zoomLevel;
-    iconLayer.height = bgImage.height * zoomLevel;
-    iconLayer.style.width = `${iconLayer.width}px`;
-    iconLayer.style.height = `${iconLayer.height}px`;
-    */
-
-    /*
-    [mapLayer, iconLayer].forEach(layer => {
-        layer.width = dragLayer.width;
-        layer.height = dragLayer.height;
-        layer.style.width = `${layer.width}px`;
-        layer.style.height = `${layer.height}px`;
+    icons.forEach(icon => {
+        // Get the icon's position as a percentage of the original map size
+        const originalLeft = parseInt(icon.style.left);
+        const originalTop = parseInt(icon.style.top);
+        
+        // Calculate position as a percentage of original map size
+        const leftPercent = originalLeft / originalMapWidth;
+        const topPercent = originalTop / originalMapHeight;
+        
+        // Update icon position based on new zoom level
+        const newLeft = leftPercent * (originalMapWidth);
+        const newTop = topPercent * (originalMapHeight);
+        
+        icon.style.left = `${newLeft}px`;
+        icon.style.top = `${newTop}px`;     
     });
-    */
-
 
     drawBackground();
     redrawCanvas();
     updateMapPosition();
-   
-    /*
-    icons.forEach(icon => {
-        //const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / dragLayer.width;
-        //const topPercent = (parseInt(icon.style.top) - mapOffsetY) / dragLayer.height;
-        //icon.style.left = `${leftPercent * dragLayer.width + mapOffsetX}px`; 
-        //icon.style.top = `${topPercent * dragLayer.height + mapOffsetY}px`;
-        const leftPercent = (parseInt(icon.style.left) - mapOffsetX) / dragLayer.width;
-        const topPercent = (parseInt(icon.style.top) - mapOffsetY) / dragLayer.height;
-        icon.style.left = `${leftPercent * dragLayer.width + mapOffsetX}px`; 
-        icon.style.top = `${topPercent * dragLayer.height + mapOffsetY}px`;
-        //icon.style.width = `${50 * zoomLevel}px`;
-        //icon.style.height = `${50 * zoomLevel}px`;
-    });
-    */
 }
 
 function getEventPos(canvas, e) {
@@ -133,7 +125,7 @@ function handleWheelZoom(e) {
     const rect = container.getBoundingClientRect();
     //const mouseX = (e.clientX - rect.left) / rect.width;
     //const mouseY = (e.clientY - rect.top) / rect.height;
-    const [mouseX, mouseY] = getEventPos(mapLayer, e);
+    const [mouseX, mouseY] = getEventPos(mapCanvas, e);
 
     // mouse pos relative to map content
     const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
@@ -210,17 +202,18 @@ function handleTouchEnd(e) {
 }
 
 function updateMapPosition() {
-    //mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    dragLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    //dragLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     //drawingLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     // we might implement this in the future but it needs other fixes
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
 
 function drawBackground() {
-    mapCtx.clearRect(0, 0, mapLayer.width, mapLayer.height);
-    mapCtx.drawImage(bgImage, 0, 0, mapLayer.width, mapLayer.height);
+    mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+    mapCtx.drawImage(bgImage, 0, 0, mapCanvas.width, mapCanvas.height);
 }
 
 function startDraggingMap(e) {
@@ -239,8 +232,8 @@ function dragMap(e) {
     const deltaY = clientY - lastMouseY;
     mapOffsetX += deltaX;
     mapOffsetY += deltaY;
-    //const maxOffsetX = container.clientWidth - mapLayer.width;
-    //const maxOffsetY = container.clientHeight - mapLayer.height;
+    //const maxOffsetX = container.clientWidth - mapCanvas.width;
+    //const maxOffsetY = container.clientHeight - mapCanvas.height;
     //mapOffsetX = Math.min(0, Math.max(mapOffsetX, maxOffsetX));
     //mapOffsetY = Math.min(0, Math.max(mapOffsetY, maxOffsetY));
     lastMouseX = clientX;
@@ -532,7 +525,8 @@ function switchToPenMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'auto';
-        mapLayer.style.pointerEvents = 'none';
+        dragLayer.style.pointerEvents = 'none';
+        mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
     }
 }
@@ -546,7 +540,8 @@ function switchToEraserMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'auto';
-        mapLayer.style.pointerEvents = 'none';
+        dragLayer.style.pointerEvents = 'none';
+        mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
     }
 }
@@ -560,7 +555,8 @@ function switchToMoveIconMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
-        mapLayer.style.pointerEvents = 'none';
+        dragLayer.style.pointerEvents = 'none';
+        mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
 }
@@ -574,8 +570,10 @@ function switchToMoveMapMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
-        mapLayer.style.pointerEvents = 'auto';
+        dragLayer.style.pointerEvents = 'auto';
+        mapCanvas.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
+
     }
 }
 
@@ -588,7 +586,8 @@ function switchToDelIconMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingLayer.style.pointerEvents = 'none';
-        mapLayer.style.pointerEvents = 'none';
+        dragLayer.style.pointerEvents = 'none';
+        mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
 }
@@ -602,16 +601,16 @@ container.addEventListener('touchmove', handleTouchZoom);
 container.addEventListener('touchend', handleTouchEnd);
 
 // mouse map drag event listeners
-mapLayer.addEventListener('mousedown', startDraggingMap);
-mapLayer.addEventListener('mousemove', dragMap);
-mapLayer.addEventListener('mouseup', stopDraggingMap);
-mapLayer.addEventListener('mouseout', stopDraggingMap);
+mapCanvas.addEventListener('mousedown', startDraggingMap);
+mapCanvas.addEventListener('mousemove', dragMap);
+mapCanvas.addEventListener('mouseup', stopDraggingMap);
+mapCanvas.addEventListener('mouseout', stopDraggingMap);
 
 // touch map drag event listener
-mapLayer.addEventListener('touchstart', startDraggingMap);
-mapLayer.addEventListener('touchmove', dragMap);
-mapLayer.addEventListener('touchend', stopDraggingMap);
-mapLayer.addEventListener('touchcancel', stopDraggingMap);
+mapCanvas.addEventListener('touchstart', startDraggingMap);
+mapCanvas.addEventListener('touchmove', dragMap);
+mapCanvas.addEventListener('touchend', stopDraggingMap);
+mapCanvas.addEventListener('touchcancel', stopDraggingMap);
 
 // icon event listeners
 iconLayer.addEventListener('mousemove', dragIcon);

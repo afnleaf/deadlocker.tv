@@ -287,11 +287,11 @@ button.copy-button {
 }
 
 /* layers */
-#mapLayer, #iconLayer, #drawingLayer {
+#mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
     position: absolute;
 }
 
-.canvas-container, #mapLayer, #iconLayer, #drawingLayer {
+.canvas-container, #dragLayer, #mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -299,17 +299,30 @@ button.copy-button {
     cursor: default;
 }
 
-#mapLayer {
+#mapCanvas {
     z-index: 1;
 }
 
-#iconLayer {
+#mapLayer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     z-index: 2;
+}
+
+#dragLayer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#iconLayer {
+    z-index: 3;
     pointer-events: none;
 }
 
 #drawingLayer {
-    z-index: 3;
+    z-index: 4;
 }
 
 /* controls */
