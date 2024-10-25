@@ -287,7 +287,7 @@ button.copy-button {
 }
 
 /* layers */
-#mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
+#dragLayer, #mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
     position: absolute;
 }
 
