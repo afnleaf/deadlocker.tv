@@ -40,18 +40,6 @@ let initialDistance = 0;
 function resizeCanvas() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    //const containerWidth = window.innerWidth;
-    //const containerHeight = window.innerHeight;
-
-    dragLayer.width = containerWidth;
-    dragLayer.height = containerHeight;
-    dragLayer.style.width = `${containerWidth}px`;
-    dragLayer.style.height = `${containerHeight}px`;
-    
-    mapLayer.width = containerWidth;
-    mapLayer.height = containerHeight;
-    mapLayer.style.width = `${mapLayer.width}px`;
-    mapLayer.style.height = `${mapLayer.height}px`;
     
     mapCanvas.width = bgImage.width * zoomLevel;
     mapCanvas.height = bgImage.height * zoomLevel;
@@ -63,64 +51,121 @@ function resizeCanvas() {
     iconLayer.style.width = `${iconLayer.width}px`;
     iconLayer.style.height = `${iconLayer.height}px`;
 
-    drawingCanvas.width = containerWidth * 8 * zoomLevel;
-    drawingCanvas.height = containerHeight * 8 * zoomLevel;
+    drawingCanvas.width = containerWidth;
+    drawingCanvas.height = containerHeight;
     drawingCanvas.style.width = `${drawingCanvas.width}px`;
-    drawingCanvas.style.height = `${drawingCanvas.width}px`;
+    drawingCanvas.style.height = `${drawingCanvas.height}px`;
+
+    /*
+    dragLayer.width = containerWidth * zoomLevel;
+    dragLayer.height = containerHeight * zoomLevel;
+    dragLayer.style.width = `${dragLayer.width}px`;
+    dragLayer.style.height = `${dragLayer.height}px`;
+    
+    mapLayer.width = containerWidth;
+    mapLayer.height = containerHeight;
+    mapLayer.style.width = `${mapLayer.width}px`;
+    mapLayer.style.height = `${mapLayer.height}px`;
+    */
+
+    drawBackground();
+    redrawCanvas();
+    updateMapPosition();
+}
+/*
+function resizeCanvas() {
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    mapLayer.width = containerWidth;
+    mapLayer.height = containerHeight;
+    mapLayer.style.width = `${mapLayer.width}px`;
+    mapLayer.style.height = `${mapLayer.height}px`;
+    
+    // Make map canvas match background image size with zoom
+    mapCanvas.width = bgImage.width * zoomLevel;
+    mapCanvas.height = bgImage.height * zoomLevel;
+    mapCanvas.style.width = `${mapCanvas.width}px`;
+    mapCanvas.style.height = `${mapCanvas.height}px`;
+   
+    // Make drawing canvas match map canvas size exactly
+    drawingCanvas.width = mapCanvas.width;
+    drawingCanvas.height = mapCanvas.height;
+    drawingCanvas.style.width = `${mapCanvas.width}px`;
+    drawingCanvas.style.height = `${mapCanvas.height}px`;
+   
+    // Keep icon layer and drag layer as is
+    iconLayer.width = containerWidth * 4 * zoomLevel;
+    iconLayer.height = containerHeight * 4 * zoomLevel;
+    iconLayer.style.width = `${iconLayer.width}px`;
+    iconLayer.style.height = `${iconLayer.height}px`;
    
     dragLayer.width = containerWidth * zoomLevel;
     dragLayer.height = containerHeight * zoomLevel;
     dragLayer.style.width = `${dragLayer.width}px`;
     dragLayer.style.height = `${dragLayer.height}px`;
 
-    // Store original map dimensions
-    const originalMapWidth = iconLayer.width;
-    const originalMapHeight = iconLayer.height;
-    /*
-    icons.forEach(icon => {
-        // Get the icon's position as a percentage of the original map size
-        const originalLeft = parseInt(icon.style.left);
-        const originalTop = parseInt(icon.style.top);
-        
-        // Calculate position as a percentage of original map size
-        const leftPercent = originalLeft / originalMapWidth;
-        const topPercent = originalTop / originalMapHeight;
-        
-        // Update icon position based on new zoom level
-        const newLeft = leftPercent * (originalMapWidth);
-        const newTop = topPercent * (originalMapHeight);
-        
-        icon.style.left = `${newLeft}px`;
-        icon.style.top = `${newTop}px`;     
-    });
-    */
     drawBackground();
     redrawCanvas();
     updateMapPosition();
 }
+*/
 
 function updateMapPosition() {
     mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     //mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     //dragLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    //drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     // we might implement this in the future but it needs other fixes
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
 }
 
+/*
+function getEventPos(canvas, e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    
+    let offsetX = mapOffsetX;
+    let offsetY = mapOffsetY;
+    let zoom = zoomLevel;
+    if(canvas === drawingCanvas) {
+        offsetX = mapOffsetX;
+        offsetY = mapOffsetY;
+    }
+    
+    // Adjust for map offset and zoom
+    //const x = (clientX - rect.left - offsetX) / (canvas.width * zoom);
+    //const y = (clientY - rect.top - offsetY) / (canvas.height * zoom);
+    //return [x, y];
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+    return [x, y];
+}
+*/
 
 function getEventPos(canvas, e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    // Adjust for map offset and zoom
-    const x = (clientX - rect.left - mapOffsetX) / (canvas.width * zoomLevel);
-    const y = (clientY - rect.top - mapOffsetY) / (canvas.height * zoomLevel);
+    
+    /*
+    if (canvas !== drawingCanvas) {
+        const x = (clientX - rect.left - mapOffsetX) / zoomLevel;
+        const y = (clientY - rect.top - mapOffsetY) / zoomLevel;
+        
+        return [x, y];
+    } else {
+        // For other interactions
+        const x = (clientX - rect.left) / rect.width;
+        const y = (clientY - rect.top) / rect.height;
+        return [x, y];
+    }
+    */
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
     return [x, y];
-    //const x = (clientX - rect.left) / rect.width;
-    //const y = (clientY - rect.top) / rect.height;
-    //return [x, y];
 }
 
 /* map layer ----------------------------------------------------- */
@@ -138,7 +183,7 @@ function handleWheelZoom(e) {
     const rect = container.getBoundingClientRect();
     //const mouseX = (e.clientX - rect.left) / rect.width;
     //const mouseY = (e.clientY - rect.top) / rect.height;
-    const [mouseX, mouseY] = getEventPos(dragLayer, e);
+    const [mouseX, mouseY] = getEventPos(mapCanvas, e);
 
     // Store icon positions relative to map before zoom
     const iconPositions = icons.map(icon => ({
@@ -466,6 +511,35 @@ function redrawCanvas() {
     //drawCtx.restore();
 }
 
+/*
+function redrawCanvas() {
+    drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+    [...paths, currentPath].filter(Boolean).forEach(path => {
+        drawCtx.beginPath();
+        path.points.forEach((point, index) => {
+            // Convert normalized coordinates back to canvas coordinates
+            const x = point.x * bgImage.width;
+            const y = point.y * bgImage.height;
+            
+            if (index === 0) {
+                drawCtx.moveTo(x, y);
+            } else {
+                drawCtx.lineTo(x, y);
+            }
+        });
+        
+        drawCtx.strokeStyle = path.color;
+        drawCtx.lineWidth = path.width * zoomLevel;
+        drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.stroke();
+    });
+}
+*/
+
+
 function draw(e) {
     if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
     e.preventDefault();
@@ -477,6 +551,24 @@ function draw(e) {
         eraseAtPoint(x, y);
     }
 }
+
+/*
+function draw(e) {
+    if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
+    e.preventDefault();
+    const [x, y] = getEventPos(drawingCanvas, e);
+    
+    // Add bounds checking
+    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
+        if(currentMode === 'pen') {
+            currentPath.points.push({x, y});
+            redrawCanvas();
+        } else if(currentMode === 'eraser') {
+            eraseAtPoint(x, y);
+        }
+    }
+}
+*/
 
 function startDrawing(e) {
     if(currentMode !== 'pen' && currentMode !== 'eraser') return;
@@ -505,11 +597,19 @@ function stopDrawing() {
 }
 
 function eraseAtPoint(x, y) {
-    const eraserRadius = lineWidth / (2 * drawingCanvas.width);
+    const eraserRadius = (lineWidth * zoomLevel) / (2 * drawingCanvas.width);
     //const eraserRadius = 1 / (2 * drawingCanvas.width); 
     paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
     redrawCanvas();
 }
+/*
+function eraseAtPoint(x, y) {
+    // Scale eraser radius based on zoom and canvas size
+    const eraserRadius = lineWidth / (bgImage.width * 2);
+    paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
+    redrawCanvas();
+}
+*/
 
 function isPathNearPoint(path, x, y, radius) {
     return path.points.some((point, index) => {

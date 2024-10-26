@@ -296,33 +296,70 @@ button.copy-button {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    cursor: default;
+    /* cursor: default; */
 }
 
 #mapCanvas {
-    z-index: 1;
-}
-
-#mapLayer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     z-index: 2;
 }
 
-#dragLayer {
+#mapLayer {
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
+/*
+#dragLayer {
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+*/
+
 
 #iconLayer {
     z-index: 3;
     pointer-events: none;
 }
 
-#drawingLayer {
+#drawingCanvas {
     z-index: 4;
+}
+
+/* Interaction states */
+.pen #drawingCanvas {
+    pointer-events: auto;
+    cursor: crosshair;
+}
+
+/*
+.move #dragLayer {
+    pointer-events: auto;
+    cursor: grab;
+}
+
+.move #dragLayer:active {
+    cursor: grabbing;
+}
+*/
+
+.icon #iconLayer {
+    pointer-events: auto;
+}
+
+/* Icon styling */
+.draggable-icon {
+    position: absolute;
+    pointer-events: auto;
+    user-select: none;
+    cursor: grab;
+}
+
+.draggable-icon:active {
+    cursor: grabbing;
 }
 
 /* controls */
@@ -352,7 +389,7 @@ button.copy-button {
     flex-wrap: wrap;
     gap: 2px;
     padding: 3px;
-    border: 1px solid var(--kobicha);
+    border: 4px solid var(--kobicha);
     border-radius: 4px;
 }
 
