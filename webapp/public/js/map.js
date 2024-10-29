@@ -1,5 +1,3 @@
-// map.js
-
 // content elements
 const container = document.querySelector('.canvas-container');
 const mapCanvas = document.getElementById('mapCanvas');
@@ -14,7 +12,7 @@ let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.3;
-const MAX_ZOOM = 4;
+const MAX_ZOOM = 2;
 // drawing
 let paths = [];
 let currentPath = null;
@@ -50,20 +48,18 @@ function resizeCanvas() {
     /* 
     mapCanvas.width = bgImage.width * zoomLevel;
     mapCanvas.height = bgImage.height * zoomLevel;
-   
     iconLayer.width = containerWidth * 4 * zoomLevel;
     iconLayer.height = containerHeight * 4 * zoomLevel;
-
     drawingCanvas.width = containerWidth * 4 * zoomLevel;
     drawingCanvas.height = containerHeight * 4 * zoomLevel;
     */
     mapCanvas.width = bgImage.width;
     mapCanvas.height = bgImage.height;
-    iconLayer.width = bgImage.width;
-    iconLayer.height = bgImage.height;
-    drawingCanvas.width = bgImage.width;
-    drawingCanvas.height = bgImage.height;
-    /* 
+    iconLayer.width = bgImage.width * 2;
+    iconLayer.height = bgImage.height * 2;
+    drawingCanvas.width = bgImage.width * 2;
+    drawingCanvas.height = bgImage.height * 2;
+    /*
     iconLayer.width = containerWidth;
     iconLayer.height = containerHeight;
     drawingCanvas.width = containerWidth;
@@ -75,25 +71,6 @@ function resizeCanvas() {
         layer.style.height = `${layer.height}px`;
     });
     
-    /*
-    // Set the map canvas to match the image dimensions
-    mapCanvas.width = bgImage.width;
-    mapCanvas.height = bgImage.height;
-    
-    // Set drawing and icon layers to match container size
-    drawingCanvas.width = containerWidth;
-    drawingCanvas.height = containerHeight;
-    iconLayer.width = containerWidth;
-    iconLayer.height = containerHeight;
-    
-    // Scale all canvases with CSS transform instead of changing dimensions
-    const scale = zoomLevel;
-    [mapCanvas, iconLayer, drawingCanvas].forEach((layer) => {
-        layer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
-        //layer.style.transformOrigin = '0 0';
-    });
-    */
-    
     drawBackground();
     redrawCanvas();
     updateMapPosition();
@@ -103,9 +80,7 @@ function updateMapPosition() {
     const scale = zoomLevel;
     mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
     iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
-    //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
     drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
-    // we might implement this in the future but it needs other fixes
 }
 
 function getEventPos(canvas, e) {
@@ -209,7 +184,7 @@ function handleWheelZoom(e) {
 
 
     //updateIconPositions(iconPositions);
-
+    updateIconScales();
     resizeCanvas();
     switchToMoveMapMode();
 }
@@ -253,6 +228,7 @@ function handleTouchZoom(e) {
     mapOffsetY = normalizedY - mapMouseX * zoomLevel;
     
     resizeCanvas();
+    updateIconScales();
     switchToMoveMapMode();
 }
 
@@ -336,10 +312,18 @@ function addIcon(iconName, side, x = 100, y = 100) {
     //icon.style.top = `${(mapRelativeY * bgImage.height * zoomLevel) - (BASE_ICON_SIZE / 2)}px`;
     //icon.style.left = `${x - (BASE_ICON_SIZE / 2)}px`;
     //icon.style.top = `${y - (BASE_ICON_SIZE / 2)}px`; 
-    icon.style.left = `${x - (BASE_ICON_SIZE / 2)}px`;
-    icon.style.top = `${y - (BASE_ICON_SIZE / 2)}px`; 
+    const rect = iconLayer.getBoundingClientRect();
+    const mapX = (x * iconLayer.width);
+    const mapY = (y * iconLayer.height);
+
+    icon.style.left = `${mapX - BASE_ICON_SIZE}px`;
+    icon.style.top = `${mapY - BASE_ICON_SIZE}px`; 
     icon.style.width = `${BASE_ICON_SIZE}px`;
     icon.style.height = `${BASE_ICON_SIZE}px`;
+
+    icon.style.transform = `scale(${1 / zoomLevel})`;
+    icon.style.transformOrigin = 'top left';
+
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -392,10 +376,15 @@ function startDraggingIcon(e) {
     const clientX = e.clientX || e.touches[0].clientX;
     const clientY = e.clientY || e.touches[0].clientY;
     
-    draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
-    draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
+    const iconLeft = parseInt(draggedIcon.style.left);
+    const iconTop = parseInt(draggedIcon.style.top);
+
+    //draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
+    //draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
     //draggedIcon.dataset.offsetX = clientX - rect.left;
     //draggedIcon.dataset.offsetY = clientY - rect.top;
+    draggedIcon.dataset.offsetX = (clientX - rect.left) / zoomLevel - iconLeft;
+    draggedIcon.dataset.offsetY = (clientY - rect.top) / zoomLevel - iconTop;
     
     draggedIcon.style.cursor = 'grabbing';
 }
@@ -424,19 +413,21 @@ function dragIcon(e) {
         return;
     }
 
-    let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
-    let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    //let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
+    //let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
+    let newX = (clientX - rect.left) / zoomLevel - parseInt(draggedIcon.dataset.offsetX);
+    let newY = (clientY - rect.top) / zoomLevel - parseInt(draggedIcon.dataset.offsetY);
 
     // constrain within map bounds
     //const mapWidth = bgImage.width * zoomLevel;
     //const mapHeight = bgImage.height * zoomLevel;
-    
     //newX = Math.max(0, Math.min(newX, mapWidth - draggedIcon.clientWidth));
     //newY = Math.max(0, Math.min(newY, mapHeight - draggedIcon.clientHeight));
-    
-    // constrain the icon within the map layer
-    newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
+    // constrain the icon within the iconLayer bounds
+    newX = Math.max(0, Math.min(newX, iconLayer.width - BASE_ICON_SIZE));
+    newY = Math.max(0, Math.min(newY, iconLayer.height - BASE_ICON_SIZE));
+    //newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
+    //newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
     
     draggedIcon.style.left = `${newX}px`;
     draggedIcon.style.top = `${newY}px`;
@@ -474,18 +465,29 @@ container.addEventListener('dragover', (e) => {
 container.addEventListener('drop', (e) => {
     e.preventDefault();
     const iconName = e.dataTransfer.getData('text');
+    const rect = iconLayer.getBoundingClientRect();
+    
+
     //const [x, y] = getEventPos(iconLayer, e);
     //const rect = container.getBoundingClientRect();
     //const rect = iconLayer.getBoundingClientRect();
     //const x = e.clientX - rect.left;
     //const y = e.clientY - rect.top;
-    const [x, y] = getEventPos(iconLayer, e);
+    //const [x, y] = getEventPos(iconLayer, e);
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
 
     const selectedSide = document.querySelector('input[name="sideSwitch"]:checked').value;
-    console.log(x);
-    console.log(y + "--\n");
+    //console.log(x);
+    //console.log(y + "--\n");
     addIcon(iconName, selectedSide, x, y);
 });
+
+function updateIconScales() {
+    icons.forEach(icon => {
+        icon.style.transform = `scale(${1 / zoomLevel})`;
+    });
+}
 
 /* drawing layer ------------------------------------------------- */
 
@@ -509,8 +511,7 @@ function redrawCanvas() {
             }
         });
         drawCtx.strokeStyle = path.color;
-        //drawCtx.lineWidth = path.width * zoomLevel;
-        drawCtx.lineWidth = path.width / zoomLevel;
+        drawCtx.lineWidth = path.width * zoomLevel;
         drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
         drawCtx.lineCap = 'round';
         drawCtx.lineJoin = 'round';
@@ -533,7 +534,7 @@ function draw(e) {
             drawCtx.moveTo(lastTwo[0].x * drawingCanvas.width, lastTwo[0].y * drawingCanvas.height);
             drawCtx.lineTo(lastTwo[1].x * drawingCanvas.width, lastTwo[1].y * drawingCanvas.height);
             drawCtx.strokeStyle = currentPath.color;
-            drawCtx.linewidth = currentPath.width / zoomLevel;
+            drawCtx.lineWidth = currentPath.width * zoomLevel;
             drawCtx.globalAlpha = currentPath.penType === 'highlighter' ? 0.5 : 1;
             drawCtx.lineCap = 'round';
             drawCtx.lineJoin = 'round';
@@ -553,7 +554,7 @@ function startDrawing(e) {
         currentPath = {
             points: [{x, y}], 
             color: lineColor,
-            width: lineWidth * zoomLevel,
+            width: lineWidth,
             penType: penType
         };
     } else if (currentMode === 'eraser'){
@@ -812,7 +813,7 @@ clearPenButton.addEventListener('click', clearDraw);
 
 const lineWidthMenu = document.getElementById('lineWidth');
 lineWidthMenu.addEventListener('change', (e) => {
-    lineWidth = parseInt(e.target.value) * zoomLevel;
+    lineWidth = parseInt(e.target.value);
     switchToPenMode();
 });
 
