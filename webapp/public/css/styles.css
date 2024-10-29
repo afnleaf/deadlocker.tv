@@ -169,7 +169,7 @@ footer p {
 .video-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 120px); /* Adjust based on your header, footer, and any margins */
+    height: calc(100vh - 120px);
     margin: 10px;
     padding: 10px;
     box-sizing: border-box;
@@ -287,11 +287,11 @@ button.copy-button {
 }
 
 /* layers */
-#dragLayer, #mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
+#mapCanvas, #iconLayer, #drawingLayer {
     position: absolute;
 }
 
-.canvas-container, #dragLayer, #mapLayer, #mapCanvas, #iconLayer, #drawingLayer {
+.draggable-icon, .canvas-container, #mapCanvas, #iconLayer, #drawingLayer {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -302,23 +302,6 @@ button.copy-button {
 #mapCanvas {
     z-index: 2;
 }
-
-#mapLayer {
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/*
-#dragLayer {
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-*/
-
 
 #iconLayer {
     z-index: 3;
@@ -334,17 +317,6 @@ button.copy-button {
     pointer-events: auto;
     cursor: crosshair;
 }
-
-/*
-.move #dragLayer {
-    pointer-events: auto;
-    cursor: grab;
-}
-
-.move #dragLayer:active {
-    cursor: grabbing;
-}
-*/
 
 .icon #iconLayer {
     pointer-events: auto;

@@ -2,15 +2,19 @@
 
 // content elements
 const container = document.querySelector('.canvas-container');
-const dragLayer = document.getElementById('dragLayer');
 const mapCanvas = document.getElementById('mapCanvas');
-const mapLayer = document.getElementById('mapLayer');
 const iconLayer = document.getElementById('iconLayer');
 const drawingCanvas = document.getElementById('drawingCanvas');
 const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingCanvas.getContext('2d');
 const bgImage = new Image();
 let currentMode = 'pen';
+// zoom
+let zoomLevel = 0.7;
+let mapOffsetX = 0;
+let mapOffsetY = 0;
+const MIN_ZOOM = 0.3;
+const MAX_ZOOM = 4;
 // drawing
 let paths = [];
 let currentPath = null;
@@ -24,173 +28,159 @@ let penType = "opaque";
 let icons = [];
 let draggedIcon = null;
 let isDragging = false;
-// zoom
-let zoomLevel = 0.7;
-let mapOffsetX = 0;
-let mapOffsetY = 0;
-const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 8;
+const BASE_ICON_SIZE = 48;
 // move map
 let isDraggingMap = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 let initialDistance = 0;
+// perf
+let isZooming = false;
+let zoomTimeout = null;
+let cachedCanvas = document.createElement('canvas');
+let cachedCtx = cachedCanvas.getContext('2d');
+let lastZoomLevel = zoomLevel;
+let pathSimplificationThreshold = 2;
 
 /* all layers ---------------------------------------------------- */
+
 function resizeCanvas() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    
+    /* 
     mapCanvas.width = bgImage.width * zoomLevel;
     mapCanvas.height = bgImage.height * zoomLevel;
-    mapCanvas.style.width = `${mapCanvas.width}px`;
-    mapCanvas.style.height = `${mapCanvas.height}px`;
    
     iconLayer.width = containerWidth * 4 * zoomLevel;
     iconLayer.height = containerHeight * 4 * zoomLevel;
-    iconLayer.style.width = `${iconLayer.width}px`;
-    iconLayer.style.height = `${iconLayer.height}px`;
 
+    drawingCanvas.width = containerWidth * 4 * zoomLevel;
+    drawingCanvas.height = containerHeight * 4 * zoomLevel;
+    */
+    mapCanvas.width = bgImage.width;
+    mapCanvas.height = bgImage.height;
+    iconLayer.width = bgImage.width;
+    iconLayer.height = bgImage.height;
+    drawingCanvas.width = bgImage.width;
+    drawingCanvas.height = bgImage.height;
+    /* 
+    iconLayer.width = containerWidth;
+    iconLayer.height = containerHeight;
     drawingCanvas.width = containerWidth;
     drawingCanvas.height = containerHeight;
-    drawingCanvas.style.width = `${drawingCanvas.width}px`;
-    drawingCanvas.style.height = `${drawingCanvas.height}px`;
-
-    /*
-    dragLayer.width = containerWidth * zoomLevel;
-    dragLayer.height = containerHeight * zoomLevel;
-    dragLayer.style.width = `${dragLayer.width}px`;
-    dragLayer.style.height = `${dragLayer.height}px`;
-    
-    mapLayer.width = containerWidth;
-    mapLayer.height = containerHeight;
-    mapLayer.style.width = `${mapLayer.width}px`;
-    mapLayer.style.height = `${mapLayer.height}px`;
     */
-
+   
+    [mapCanvas, iconLayer, drawingCanvas].forEach((layer) => {
+        layer.style.width = `${layer.width}px`;
+        layer.style.height = `${layer.height}px`;
+    });
+    
+    /*
+    // Set the map canvas to match the image dimensions
+    mapCanvas.width = bgImage.width;
+    mapCanvas.height = bgImage.height;
+    
+    // Set drawing and icon layers to match container size
+    drawingCanvas.width = containerWidth;
+    drawingCanvas.height = containerHeight;
+    iconLayer.width = containerWidth;
+    iconLayer.height = containerHeight;
+    
+    // Scale all canvases with CSS transform instead of changing dimensions
+    const scale = zoomLevel;
+    [mapCanvas, iconLayer, drawingCanvas].forEach((layer) => {
+        layer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
+        //layer.style.transformOrigin = '0 0';
+    });
+    */
+    
     drawBackground();
     redrawCanvas();
     updateMapPosition();
 }
-/*
-function resizeCanvas() {
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    
-    mapLayer.width = containerWidth;
-    mapLayer.height = containerHeight;
-    mapLayer.style.width = `${mapLayer.width}px`;
-    mapLayer.style.height = `${mapLayer.height}px`;
-    
-    // Make map canvas match background image size with zoom
-    mapCanvas.width = bgImage.width * zoomLevel;
-    mapCanvas.height = bgImage.height * zoomLevel;
-    mapCanvas.style.width = `${mapCanvas.width}px`;
-    mapCanvas.style.height = `${mapCanvas.height}px`;
-   
-    // Make drawing canvas match map canvas size exactly
-    drawingCanvas.width = mapCanvas.width;
-    drawingCanvas.height = mapCanvas.height;
-    drawingCanvas.style.width = `${mapCanvas.width}px`;
-    drawingCanvas.style.height = `${mapCanvas.height}px`;
-   
-    // Keep icon layer and drag layer as is
-    iconLayer.width = containerWidth * 4 * zoomLevel;
-    iconLayer.height = containerHeight * 4 * zoomLevel;
-    iconLayer.style.width = `${iconLayer.width}px`;
-    iconLayer.style.height = `${iconLayer.height}px`;
-   
-    dragLayer.width = containerWidth * zoomLevel;
-    dragLayer.height = containerHeight * zoomLevel;
-    dragLayer.style.width = `${dragLayer.width}px`;
-    dragLayer.style.height = `${dragLayer.height}px`;
-
-    drawBackground();
-    redrawCanvas();
-    updateMapPosition();
-}
-*/
 
 function updateMapPosition() {
-    mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    //mapLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    //dragLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    //drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
-    // we might implement this in the future but it needs other fixes
+    const scale = zoomLevel;
+    mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
+    iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
     //iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px)`;
+    drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
+    // we might implement this in the future but it needs other fixes
 }
-
-/*
-function getEventPos(canvas, e) {
-    const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
-    let offsetX = mapOffsetX;
-    let offsetY = mapOffsetY;
-    let zoom = zoomLevel;
-    if(canvas === drawingCanvas) {
-        offsetX = mapOffsetX;
-        offsetY = mapOffsetY;
-    }
-    
-    // Adjust for map offset and zoom
-    //const x = (clientX - rect.left - offsetX) / (canvas.width * zoom);
-    //const y = (clientY - rect.top - offsetY) / (canvas.height * zoom);
-    //return [x, y];
-    const x = (clientX - rect.left) / rect.width;
-    const y = (clientY - rect.top) / rect.height;
-    return [x, y];
-}
-*/
 
 function getEventPos(canvas, e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    
-    /*
-    if (canvas !== drawingCanvas) {
-        const x = (clientX - rect.left - mapOffsetX) / zoomLevel;
-        const y = (clientY - rect.top - mapOffsetY) / zoomLevel;
-        
-        return [x, y];
-    } else {
-        // For other interactions
-        const x = (clientX - rect.left) / rect.width;
-        const y = (clientY - rect.top) / rect.height;
-        return [x, y];
-    }
-    */
     const x = (clientX - rect.left) / rect.width;
     const y = (clientY - rect.top) / rect.height;
     return [x, y];
 }
 
-/* map layer ----------------------------------------------------- */
 
-// load map image
-bgImage.onload = () => {
-    resizeCanvas()
-};
-//bgImage.src = '/public/images/DeadlockMiniMap.png';
-//bgImage.src = '/public/images/Map.png';
-bgImage.src = '/public/images/UpscaledMap.png';
+/* perf ---------------------------------------------------------- */
+
+function simplifyPath(path, threshold) {
+    if(!path.points.length) return path;
+
+    // simplified paths
+    const s = {
+        points: [path.points[0]],
+        color: path.color,
+        width: path.width,
+        penType: path.penType
+    }
+    
+    // cache reused values
+    const w = drawingCanvas.width;
+    const h = drawingCanvas.height;
+
+    for(let i = 0; i < path.points.length; i++) {
+        const lastPoint = s.points[s.points.length - 1];
+        const currentPoint = path.points[i];
+
+        // calculate screen space distance between points
+        const dx = (currentPoint.x - lastPoint.x) * w;
+        const dy = (currentPoint.y - lastPoint.y) * h;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if(distance >= threshold) {
+            s.points.push(currentPoint);
+        }
+    }
+    return s;
+}
+
+/* zoom ---------------------------------------------------------- */
+
+// store icon positions relative to map before zoom
+function storeIconPositions() {
+    const iconPositions = icons.map(icon => ({
+        icon: icon,
+        relX: (parseInt(icon.style.left) + (BASE_ICON_SIZE / 2)) / (bgImage.width * zoomLevel),
+        relY: (parseInt(icon.style.top) + (BASE_ICON_SIZE / 2)) / (bgImage.height * zoomLevel)
+    }));
+    return iconPositions;
+}
+
+// update icon positions using their relative coordinates
+function updateIconPositions(iconPositions) {
+    iconPositions.forEach(({icon, relX, relY}) => {
+        const newX = (relX * bgImage.width * zoomLevel) - (BASE_ICON_SIZE / 2);
+        const newY = (relY * bgImage.height * zoomLevel) - (BASE_ICON_SIZE / 2);
+        //const newX = (relX * bgImage.width) - (BASE_ICON_SIZE / 2);
+        //const newY = (relY * bgImage.height) - (BASE_ICON_SIZE / 2);
+        icon.style.left = `${newX}px`;
+        icon.style.top = `${newY}px`;
+    });
+}
 
 function handleWheelZoom(e) {
     e.preventDefault();
     const rect = container.getBoundingClientRect();
-    //const mouseX = (e.clientX - rect.left) / rect.width;
-    //const mouseY = (e.clientY - rect.top) / rect.height;
     const [mouseX, mouseY] = getEventPos(mapCanvas, e);
 
-    // Store icon positions relative to map before zoom
-    const iconPositions = icons.map(icon => ({
-        icon: icon,
-        relX: (parseInt(icon.style.left) + 25) / (bgImage.width * zoomLevel),
-        relY: (parseInt(icon.style.top) + 25) / (bgImage.height * zoomLevel)
-    }));
+    //const iconPositions = storeIconPositions();
 
     // mouse pos relative to map content
     const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
@@ -205,13 +195,20 @@ function handleWheelZoom(e) {
     mapOffsetX = mouseX - mapMouseX * zoomLevel;
     mapOffsetY = mouseY - mapMouseY * zoomLevel;
 
-    // Update icon positions using their relative coordinates
-    iconPositions.forEach(({icon, relX, relY}) => {
-        const newX = (relX * bgImage.width * zoomLevel) - 25;
-        const newY = (relY * bgImage.height * zoomLevel) - 25;
-        icon.style.left = `${newX}px`;
-        icon.style.top = `${newY}px`;
-    });
+    // Set zooming flag and clear any existing timeout
+    isZooming = true;
+    if (zoomTimeout) {
+        clearTimeout(zoomTimeout);
+    }
+
+    // Set a timeout to update with full quality after zooming stops
+    zoomTimeout = setTimeout(() => {
+        isZooming = false;
+        redrawCanvas();
+    }, 150); // Adjust this delay as needed
+
+
+    //updateIconPositions(iconPositions);
 
     resizeCanvas();
     switchToMoveMapMode();
@@ -261,28 +258,31 @@ function handleTouchZoom(e) {
 
 function handleTouchStart(e) {
     if (e.touches.length === 2) {
-        // Reset initial distance when a new pinch gesture starts
+        // reset initial distance when a new pinch gesture starts
         initialDistance = 0;
     }
 }
 
 function handleTouchEnd(e) {
     if (e.touches.length < 2) {
-        // Reset initial distance when pinch gesture ends
+        // reset initial distance when pinch gesture ends
         initialDistance = 0;
     }
 }
 
+/* map layer ----------------------------------------------------- */
+
+// load map image
+bgImage.onload = () => {
+    resizeCanvas()
+};
+//bgImage.src = '/public/images/DeadlockMiniMap.png';
+//bgImage.src = '/public/images/Map.png';
+bgImage.src = '/public/images/UpscaledMap.png';
+
 function drawBackground() {
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     mapCtx.drawImage(bgImage, 0, 0, mapCanvas.width, mapCanvas.height);
-}
-
-function startDraggingMap(e) {
-    if(currentMode !== 'map') return;
-    isDraggingMap = true;
-    lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
-    lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
 }
 
 function dragMap(e) {
@@ -303,10 +303,16 @@ function dragMap(e) {
     resizeCanvas();
 }
 
+function startDraggingMap(e) {
+    if(currentMode !== 'map') return;
+    isDraggingMap = true;
+    lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+    lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+}
+
 function stopDraggingMap() {
     isDraggingMap = false;
 }
-
 
 /* icon layer ---------------------------------------------------- */
 
@@ -323,21 +329,17 @@ function addIcon(iconName, side, x = 100, y = 100) {
     icon.src = `public/images/hero_icons/default/${iconName}.png`;
     icon.className = 'draggable-icon';
     icon.style.position = 'absolute';
-    
-
-    // Position relative to map size and zoom level
-    const mapRelativeX = x / (bgImage.width * zoomLevel);
-    const mapRelativeY = y / (bgImage.height * zoomLevel);
-    
-    icon.style.left = `${(mapRelativeX * bgImage.width * zoomLevel) - 25}px`;
-    icon.style.top = `${(mapRelativeY * bgImage.height * zoomLevel) - 25}px`;
-    //icon.style.left = `${x-25}px`;
-    //icon.style.top = `${y-25}px`;
-    
-
-    icon.style.width = '50px';
-    icon.style.height = '50px';
-    //icon.style.zIndex = '100';
+    // position relative to map size and zoom level
+    //const mapRelativeX = x / (bgImage.width * zoomLevel);
+    //const mapRelativeY = y / (bgImage.height * zoomLevel);
+    //icon.style.left = `${(mapRelativeX * bgImage.width * zoomLevel) - (BASE_ICON_SIZE / 2)}px`;
+    //icon.style.top = `${(mapRelativeY * bgImage.height * zoomLevel) - (BASE_ICON_SIZE / 2)}px`;
+    //icon.style.left = `${x - (BASE_ICON_SIZE / 2)}px`;
+    //icon.style.top = `${y - (BASE_ICON_SIZE / 2)}px`; 
+    icon.style.left = `${x - (BASE_ICON_SIZE / 2)}px`;
+    icon.style.top = `${y - (BASE_ICON_SIZE / 2)}px`; 
+    icon.style.width = `${BASE_ICON_SIZE}px`;
+    icon.style.height = `${BASE_ICON_SIZE}px`;
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -425,7 +427,7 @@ function dragIcon(e) {
     let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
     let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
 
-    // Constrain within map bounds
+    // constrain within map bounds
     //const mapWidth = bgImage.width * zoomLevel;
     //const mapHeight = bgImage.height * zoomLevel;
     
@@ -451,7 +453,7 @@ function createDraggableIcon(iconName) {
     const icon = document.createElement('img');
     //icon.src = `/public/images/hero_icons/${iconName}.png`;
     icon.src = `/public/images/hero_icons/default/${iconName}.png`;
-    icon.classsName = 'menu-icon';
+    icon.className = 'menu-icon';
     icon.style.width = '25px';
     icon.style.height = '25px';
     icon.style.cursor = 'grab';
@@ -474,12 +476,14 @@ container.addEventListener('drop', (e) => {
     const iconName = e.dataTransfer.getData('text');
     //const [x, y] = getEventPos(iconLayer, e);
     //const rect = container.getBoundingClientRect();
-    const rect = iconLayer.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    //const rect = iconLayer.getBoundingClientRect();
+    //const x = e.clientX - rect.left;
+    //const y = e.clientY - rect.top;
+    const [x, y] = getEventPos(iconLayer, e);
 
     const selectedSide = document.querySelector('input[name="sideSwitch"]:checked').value;
-
+    console.log(x);
+    console.log(y + "--\n");
     addIcon(iconName, selectedSide, x, y);
 });
 
@@ -487,11 +491,15 @@ container.addEventListener('drop', (e) => {
 
 function redrawCanvas() {
     drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    //drawCtx.save();
+    
+    const threshold = isZooming ? pathSimplificationThreshold / zoomLevel : 0;
 
+    //drawCtx.save();
     [...paths, currentPath].filter(Boolean).forEach(path => {
+        const simplifiedPath = threshold > 0 ? simplifyPath(path, threshold) : path;
+
         drawCtx.beginPath();
-        path.points.forEach((point, index) => {
+        simplifiedPath.points.forEach((point, index) => {
             const x = point.x * drawingCanvas.width;
             const y = point.y * drawingCanvas.height; 
             if (index === 0) {
@@ -501,44 +509,15 @@ function redrawCanvas() {
             }
         });
         drawCtx.strokeStyle = path.color;
-        drawCtx.lineWidth = path.width;
+        //drawCtx.lineWidth = path.width * zoomLevel;
+        drawCtx.lineWidth = path.width / zoomLevel;
         drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
         drawCtx.lineCap = 'round';
         drawCtx.lineJoin = 'round';
         drawCtx.stroke();
     });
-
     //drawCtx.restore();
 }
-
-/*
-function redrawCanvas() {
-    drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-
-    [...paths, currentPath].filter(Boolean).forEach(path => {
-        drawCtx.beginPath();
-        path.points.forEach((point, index) => {
-            // Convert normalized coordinates back to canvas coordinates
-            const x = point.x * bgImage.width;
-            const y = point.y * bgImage.height;
-            
-            if (index === 0) {
-                drawCtx.moveTo(x, y);
-            } else {
-                drawCtx.lineTo(x, y);
-            }
-        });
-        
-        drawCtx.strokeStyle = path.color;
-        drawCtx.lineWidth = path.width * zoomLevel;
-        drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
-        drawCtx.lineCap = 'round';
-        drawCtx.lineJoin = 'round';
-        drawCtx.stroke();
-    });
-}
-*/
-
 
 function draw(e) {
     if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
@@ -546,29 +525,25 @@ function draw(e) {
     const [x, y] = getEventPos(drawingCanvas, e);
     if(currentMode === 'pen') {
         currentPath.points.push({x, y});
-        redrawCanvas();
+        // onlu redraw current stroke while drawing
+        drawCtx.beginPath();
+        const points = currentPath.points;
+        const lastTwo = points.slice(-2);
+        if(lastTwo.length === 2) {
+            drawCtx.moveTo(lastTwo[0].x * drawingCanvas.width, lastTwo[0].y * drawingCanvas.height);
+            drawCtx.lineTo(lastTwo[1].x * drawingCanvas.width, lastTwo[1].y * drawingCanvas.height);
+            drawCtx.strokeStyle = currentPath.color;
+            drawCtx.linewidth = currentPath.width / zoomLevel;
+            drawCtx.globalAlpha = currentPath.penType === 'highlighter' ? 0.5 : 1;
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+            drawCtx.stroke();
+        }
+        //redrawCanvas();
     } else if(currentMode === 'eraser') {
         eraseAtPoint(x, y);
     }
 }
-
-/*
-function draw(e) {
-    if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
-    e.preventDefault();
-    const [x, y] = getEventPos(drawingCanvas, e);
-    
-    // Add bounds checking
-    if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
-        if(currentMode === 'pen') {
-            currentPath.points.push({x, y});
-            redrawCanvas();
-        } else if(currentMode === 'eraser') {
-            eraseAtPoint(x, y);
-        }
-    }
-}
-*/
 
 function startDrawing(e) {
     if(currentMode !== 'pen' && currentMode !== 'eraser') return;
@@ -578,7 +553,7 @@ function startDrawing(e) {
         currentPath = {
             points: [{x, y}], 
             color: lineColor,
-            width: lineWidth,
+            width: lineWidth * zoomLevel,
             penType: penType
         };
     } else if (currentMode === 'eraser'){
@@ -602,14 +577,6 @@ function eraseAtPoint(x, y) {
     paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
     redrawCanvas();
 }
-/*
-function eraseAtPoint(x, y) {
-    // Scale eraser radius based on zoom and canvas size
-    const eraserRadius = lineWidth / (bgImage.width * 2);
-    paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
-    redrawCanvas();
-}
-*/
 
 function isPathNearPoint(path, x, y, radius) {
     return path.points.some((point, index) => {
@@ -667,7 +634,6 @@ function switchToPenMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
-        dragLayer.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
     }
@@ -682,7 +648,6 @@ function switchToEraserMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
-        dragLayer.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
     }
@@ -697,7 +662,6 @@ function switchToMoveIconMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
-        dragLayer.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
@@ -712,7 +676,6 @@ function switchToMoveMapMode() {
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
-        dragLayer.style.pointerEvents = 'auto';
         mapCanvas.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
 
@@ -728,7 +691,6 @@ function switchToDelIconMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
-        dragLayer.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
@@ -850,7 +812,7 @@ clearPenButton.addEventListener('click', clearDraw);
 
 const lineWidthMenu = document.getElementById('lineWidth');
 lineWidthMenu.addEventListener('change', (e) => {
-    lineWidth = parseInt(e.target.value);
+    lineWidth = parseInt(e.target.value) * zoomLevel;
     switchToPenMode();
 });
 
@@ -871,7 +833,8 @@ document.addEventListener('keydown', checkKeydown);
 
 function checkKeydown(e) {
     //console.log(e.key);
-    switch(e.key) {
+    const c = e.key.toLowerCase();
+    switch(c) {
         // delete icon
         case 'f':
             switchToDelIconMode();
