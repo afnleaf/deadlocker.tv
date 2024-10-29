@@ -208,6 +208,16 @@ footer p {
     height: 100%;
 }
 
+.resources {
+    display: flex;
+    justify-content: center;
+    align-items: left;
+    flex-direction: column;
+    margin: 10px auto;
+    width: 80%;
+    max-width: 1200px;
+    overflow-wrap: break-word;
+}
 
 /* commands ------------------------------------------------------ */
 .md-commands {

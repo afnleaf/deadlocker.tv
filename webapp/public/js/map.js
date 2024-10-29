@@ -6,14 +6,31 @@ const drawingCanvas = document.getElementById('drawingCanvas');
 const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingCanvas.getContext('2d');
 const bgImage = new Image();
-let currentMode = 'pen';
 // zoom
 let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
+// perf
+let isZooming = false;
+let zoomTimeout = null;
+let cachedCanvas = document.createElement('canvas');
+let cachedCtx = cachedCanvas.getContext('2d');
+let lastZoomLevel = zoomLevel;
+let pathSimplificationThreshold = 2;
+// move map
+let isDraggingMap = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let initialDistance = 0;
+// icons
+let icons = [];
+let draggedIcon = null;
+let isDragging = false;
+const BASE_ICON_SIZE = 48;
 // drawing
+let currentMode = 'pen';
 let paths = [];
 let currentPath = null;
 let isDrawing = false;
@@ -22,49 +39,19 @@ let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
 let penType = "opaque";
-// icons
-let icons = [];
-let draggedIcon = null;
-let isDragging = false;
-const BASE_ICON_SIZE = 48;
-// move map
-let isDraggingMap = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-let initialDistance = 0;
-// perf
-let isZooming = false;
-let zoomTimeout = null;
-let cachedCanvas = document.createElement('canvas');
-let cachedCtx = cachedCanvas.getContext('2d');
-let lastZoomLevel = zoomLevel;
-let pathSimplificationThreshold = 2;
 
-/* all layers ---------------------------------------------------- */
+/* all layers ----------------------------------------------------- */
 
 function resizeCanvas() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    /* 
-    mapCanvas.width = bgImage.width * zoomLevel;
-    mapCanvas.height = bgImage.height * zoomLevel;
-    iconLayer.width = containerWidth * 4 * zoomLevel;
-    iconLayer.height = containerHeight * 4 * zoomLevel;
-    drawingCanvas.width = containerWidth * 4 * zoomLevel;
-    drawingCanvas.height = containerHeight * 4 * zoomLevel;
-    */
+
     mapCanvas.width = bgImage.width;
     mapCanvas.height = bgImage.height;
     iconLayer.width = bgImage.width * 2;
     iconLayer.height = bgImage.height * 2;
     drawingCanvas.width = bgImage.width * 2;
     drawingCanvas.height = bgImage.height * 2;
-    /*
-    iconLayer.width = containerWidth;
-    iconLayer.height = containerHeight;
-    drawingCanvas.width = containerWidth;
-    drawingCanvas.height = containerHeight;
-    */
    
     [mapCanvas, iconLayer, drawingCanvas].forEach((layer) => {
         layer.style.width = `${layer.width}px`;
@@ -92,8 +79,7 @@ function getEventPos(canvas, e) {
     return [x, y];
 }
 
-
-/* perf ---------------------------------------------------------- */
+/* perf ----------------------------------------------------------- */
 
 function simplifyPath(path, threshold) {
     if(!path.points.length) return path;
@@ -126,36 +112,12 @@ function simplifyPath(path, threshold) {
     return s;
 }
 
-/* zoom ---------------------------------------------------------- */
-
-// store icon positions relative to map before zoom
-function storeIconPositions() {
-    const iconPositions = icons.map(icon => ({
-        icon: icon,
-        relX: (parseInt(icon.style.left) + (BASE_ICON_SIZE / 2)) / (bgImage.width * zoomLevel),
-        relY: (parseInt(icon.style.top) + (BASE_ICON_SIZE / 2)) / (bgImage.height * zoomLevel)
-    }));
-    return iconPositions;
-}
-
-// update icon positions using their relative coordinates
-function updateIconPositions(iconPositions) {
-    iconPositions.forEach(({icon, relX, relY}) => {
-        const newX = (relX * bgImage.width * zoomLevel) - (BASE_ICON_SIZE / 2);
-        const newY = (relY * bgImage.height * zoomLevel) - (BASE_ICON_SIZE / 2);
-        //const newX = (relX * bgImage.width) - (BASE_ICON_SIZE / 2);
-        //const newY = (relY * bgImage.height) - (BASE_ICON_SIZE / 2);
-        icon.style.left = `${newX}px`;
-        icon.style.top = `${newY}px`;
-    });
-}
+/* zoom ----------------------------------------------------------- */
 
 function handleWheelZoom(e) {
     e.preventDefault();
     const rect = container.getBoundingClientRect();
     const [mouseX, mouseY] = getEventPos(mapCanvas, e);
-
-    //const iconPositions = storeIconPositions();
 
     // mouse pos relative to map content
     const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
@@ -170,25 +132,24 @@ function handleWheelZoom(e) {
     mapOffsetX = mouseX - mapMouseX * zoomLevel;
     mapOffsetY = mouseY - mapMouseY * zoomLevel;
 
-    // Set zooming flag and clear any existing timeout
+    // set zooming flag and clear any existing timeout
     isZooming = true;
     if (zoomTimeout) {
         clearTimeout(zoomTimeout);
     }
 
-    // Set a timeout to update with full quality after zooming stops
+    // set a timeout to update with full quality after zooming stops
     zoomTimeout = setTimeout(() => {
         isZooming = false;
         redrawCanvas();
-    }, 150); // Adjust this delay as needed
+    }, 150);
 
-
-    //updateIconPositions(iconPositions);
     updateIconScales();
     resizeCanvas();
     switchToMoveMapMode();
 }
 
+// need to fix and add touch for icon drop in menu
 function handleTouchZoom(e) {
     e.preventDefault();
     
@@ -246,7 +207,7 @@ function handleTouchEnd(e) {
     }
 }
 
-/* map layer ----------------------------------------------------- */
+/* map layer ------------------------------------------------------ */
 
 // load map image
 bgImage.onload = () => {
@@ -270,10 +231,6 @@ function dragMap(e) {
     const deltaY = clientY - lastMouseY;
     mapOffsetX += deltaX;
     mapOffsetY += deltaY;
-    //const maxOffsetX = container.clientWidth - mapCanvas.width;
-    //const maxOffsetY = container.clientHeight - mapCanvas.height;
-    //mapOffsetX = Math.min(0, Math.max(mapOffsetX, maxOffsetX));
-    //mapOffsetY = Math.min(0, Math.max(mapOffsetY, maxOffsetY));
     lastMouseX = clientX;
     lastMouseY = clientY;
     resizeCanvas();
@@ -290,7 +247,7 @@ function stopDraggingMap() {
     isDraggingMap = false;
 }
 
-/* icon layer ---------------------------------------------------- */
+/* icon layer ----------------------------------------------------- */
 
 function addIcon(iconName, side, x = 100, y = 100) {
     let teamColor = '';
@@ -304,26 +261,17 @@ function addIcon(iconName, side, x = 100, y = 100) {
     //icon.src = `public/images/hero_icons/emoji/${iconName}.png`;
     icon.src = `public/images/hero_icons/default/${iconName}.png`;
     icon.className = 'draggable-icon';
+    // icon size and position
     icon.style.position = 'absolute';
-    // position relative to map size and zoom level
-    //const mapRelativeX = x / (bgImage.width * zoomLevel);
-    //const mapRelativeY = y / (bgImage.height * zoomLevel);
-    //icon.style.left = `${(mapRelativeX * bgImage.width * zoomLevel) - (BASE_ICON_SIZE / 2)}px`;
-    //icon.style.top = `${(mapRelativeY * bgImage.height * zoomLevel) - (BASE_ICON_SIZE / 2)}px`;
-    //icon.style.left = `${x - (BASE_ICON_SIZE / 2)}px`;
-    //icon.style.top = `${y - (BASE_ICON_SIZE / 2)}px`; 
     const rect = iconLayer.getBoundingClientRect();
     const mapX = (x * iconLayer.width);
     const mapY = (y * iconLayer.height);
-
     icon.style.left = `${mapX - BASE_ICON_SIZE}px`;
     icon.style.top = `${mapY - BASE_ICON_SIZE}px`; 
     icon.style.width = `${BASE_ICON_SIZE}px`;
     icon.style.height = `${BASE_ICON_SIZE}px`;
-
     icon.style.transform = `scale(${1 / zoomLevel})`;
     icon.style.transformOrigin = 'top left';
-
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -379,10 +327,6 @@ function startDraggingIcon(e) {
     const iconLeft = parseInt(draggedIcon.style.left);
     const iconTop = parseInt(draggedIcon.style.top);
 
-    //draggedIcon.dataset.offsetX = clientX - rect.left - draggedIcon.offsetLeft;
-    //draggedIcon.dataset.offsetY = clientY - rect.top - draggedIcon.offsetTop;
-    //draggedIcon.dataset.offsetX = clientX - rect.left;
-    //draggedIcon.dataset.offsetY = clientY - rect.top;
     draggedIcon.dataset.offsetX = (clientX - rect.left) / zoomLevel - iconLeft;
     draggedIcon.dataset.offsetY = (clientY - rect.top) / zoomLevel - iconTop;
     
@@ -403,6 +347,7 @@ function dragIcon(e) {
     const rect = iconLayer.getBoundingClientRect();
     let clientX, clientY;
     
+    // can we replace this with get event pos?
     if (e.touches && e.touches.length > 0) {
         clientX = e.touches[0].clientX;
         clientY = e.touches[0].clientY;
@@ -413,21 +358,12 @@ function dragIcon(e) {
         return;
     }
 
-    //let newX = clientX - rect.left - parseInt(draggedIcon.dataset.offsetX);
-    //let newY = clientY - rect.top - parseInt(draggedIcon.dataset.offsetY);
     let newX = (clientX - rect.left) / zoomLevel - parseInt(draggedIcon.dataset.offsetX);
     let newY = (clientY - rect.top) / zoomLevel - parseInt(draggedIcon.dataset.offsetY);
 
-    // constrain within map bounds
-    //const mapWidth = bgImage.width * zoomLevel;
-    //const mapHeight = bgImage.height * zoomLevel;
-    //newX = Math.max(0, Math.min(newX, mapWidth - draggedIcon.clientWidth));
-    //newY = Math.max(0, Math.min(newY, mapHeight - draggedIcon.clientHeight));
     // constrain the icon within the iconLayer bounds
     newX = Math.max(0, Math.min(newX, iconLayer.width - BASE_ICON_SIZE));
     newY = Math.max(0, Math.min(newY, iconLayer.height - BASE_ICON_SIZE));
-    //newX = Math.max(0, Math.min(newX, iconLayer.clientWidth - draggedIcon.clientWidth));
-    //newY = Math.max(0, Math.min(newY, iconLayer.clientHeight - draggedIcon.clientHeight));
     
     draggedIcon.style.left = `${newX}px`;
     draggedIcon.style.top = `${newY}px`;
@@ -466,20 +402,9 @@ container.addEventListener('drop', (e) => {
     e.preventDefault();
     const iconName = e.dataTransfer.getData('text');
     const rect = iconLayer.getBoundingClientRect();
-    
-
-    //const [x, y] = getEventPos(iconLayer, e);
-    //const rect = container.getBoundingClientRect();
-    //const rect = iconLayer.getBoundingClientRect();
-    //const x = e.clientX - rect.left;
-    //const y = e.clientY - rect.top;
-    //const [x, y] = getEventPos(iconLayer, e);
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-
     const selectedSide = document.querySelector('input[name="sideSwitch"]:checked').value;
-    //console.log(x);
-    //console.log(y + "--\n");
     addIcon(iconName, selectedSide, x, y);
 });
 
@@ -489,7 +414,7 @@ function updateIconScales() {
     });
 }
 
-/* drawing layer ------------------------------------------------- */
+/* drawing layer -------------------------------------------------- */
 
 function redrawCanvas() {
     drawCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
@@ -526,7 +451,7 @@ function draw(e) {
     const [x, y] = getEventPos(drawingCanvas, e);
     if(currentMode === 'pen') {
         currentPath.points.push({x, y});
-        // onlu redraw current stroke while drawing
+        // only redraw current stroke while drawing
         drawCtx.beginPath();
         const points = currentPath.points;
         const lastTwo = points.slice(-2);
@@ -540,7 +465,6 @@ function draw(e) {
             drawCtx.lineJoin = 'round';
             drawCtx.stroke();
         }
-        //redrawCanvas();
     } else if(currentMode === 'eraser') {
         eraseAtPoint(x, y);
     }
@@ -624,8 +548,9 @@ function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
     return distance <= radius;
 }
 
-/* controls ------------------------------------------------------ */
+/* controls ------------------------------------------------------- */
 
+// is it possible to refactor all of this?
 function switchToPenMode() {
     if(currentMode !== 'pen') {
         currentMode = 'pen';
@@ -697,7 +622,7 @@ function switchToDelIconMode() {
     }
 }
 
-/* event listeners ----------------------------------------------- */
+/* event listeners ------------------------------------------------ */
 
 // zoom event listener
 container.addEventListener('wheel', handleWheelZoom);
@@ -750,7 +675,7 @@ iconLayer.addEventListener('mousedown', (e) => {
     }
 });
 
-/* control panel function ---------------------------------------- */
+/* control panel function ----------------------------------------- */
 
 function undoDraw() {
     if(paths.length > 0) {
@@ -783,7 +708,7 @@ function addIconGet() {
     }
 }
 
-/* control panel event listeners --------------------------------- */
+/* control panel event listeners ---------------------------------- */
 
 // left side of menu bar
 const deleteIconButton = document.getElementById('delMode');
@@ -873,7 +798,7 @@ function checkKeydown(e) {
     }
 }
 
-/* initial setup defaults ---------------------------------------- */
+/* initial setup defaults ----------------------------------------- */
 bgImage.onload = () => {
     resizeCanvas();
 };

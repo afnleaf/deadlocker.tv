@@ -12,10 +12,10 @@ import (
 func main() {
     // index and app routes
     http.Handle("/", handlers.IndexHandler())
-    http.Handle("/resources", handlers.ResourcesHandler())
     http.Handle("/map", handlers.MapHandler())
     http.Handle("/farm", handlers.FarmHandler())
     http.Handle("/commands", handlers.CommandsHandler())
+    //http.Handle("/resources", handlers.ResourcesHandler())
     //http.Handle("/articles/", handlers.ArticlesHandler())
 
     // serve static files

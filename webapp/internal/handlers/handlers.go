@@ -23,11 +23,18 @@ func renderMarkdown(filePath string) (string, error) {
 }
 
 func IndexHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		templates.Index().Render(r.Context(), w)
+	return func(w http.ResponseWriter, r *http.Request) {	
+        //templates.Index().Render(r.Context(), w)
+        content, err := renderMarkdown("./md/resources.md")
+        if(err != nil) {
+            http.NotFound(w, r)
+            return
+        }
+        templates.Index(content).Render(r.Context(), w)
 	}
 }
 
+/*
 func ResourcesHandler() http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         content, err := renderMarkdown("./md/resources.md")
@@ -35,9 +42,10 @@ func ResourcesHandler() http.HandlerFunc {
             http.NotFound(w, r)
             return
         }
-        templates.Commands(content).Render(r.Context(), w)
+        templates.Index(content).Render(r.Context(), w)
     }
 }
+*/
 
 func FarmHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

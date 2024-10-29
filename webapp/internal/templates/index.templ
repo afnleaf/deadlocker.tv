@@ -2,13 +2,18 @@
 
 package templates
 
-templ Index() {
+templ Index(content string) {
     @Base(true, true) {
         <div class="content-container">
             <div class="video-container">
                 <div id="twitch-embed"></div>
                 <div id="twitch-controls">
                     <button id="toggle-chat">Hide Chat</button>
+                </div>
+            </div>
+            <div class="content-container">
+                <div class="resources">
+                    @templ.Raw(content)
                 </div>
             </div>
         </div>
