@@ -2,6 +2,7 @@
 
 let embed;
 let chatVis = true;
+let embedVis = true;
 
 function createEmbed(layout) {
     if(embed) {
@@ -28,6 +29,13 @@ function toggleChat() {
     document.getElementById("toggle-chat").textContent = chatVis ? "Hide Chat": "Show Chat";
 }
 
+function toggleEmbed() {
+    embedVis = !embedVis;
+    const container = document.querySelector(".video-container");
+    container.style.display = embedVis ? "flex" : "none";
+    document.getElementById("toggle-embed").innerHTML = embedVis ? "&#9650;" : "&#9660;";
+}
+
 function handleResize() {
     const embedContainer = document.getElementById("twitch-embed");
     const controls = document.getElementById("twitch-controls");
@@ -39,30 +47,10 @@ function handleResize() {
     }
 }
 
-/*
-function handleResize() {
-    const header = document.querySelector("header");
-    const footer = document.querySelector("footer");
-    const controls = document.getElementById("twitch-controls");
-    const embedContainer = document.getElementById("twitch-embed");
-
-    if (embedContainer) {
-        const availableHeight = window.innerHeight - header.offsetHeight - footer.offsetHeight - controls.offsetHeight;
-        embedContainer.style.height = `${availableHeight}px`;
-    }
-}
-function handleResize() {
-    const videoPlayer = document.getElementById("twitch-embed");
-    if(videoPlayer) {
-        const newHeight = window.innerHeight - document.querySelector("header").offsetHeight - document.querySelector("footer").offsetHeight - document.getElementById("twitch-controls").offsetHeight;
-        embedElement.style.height = `${newHeight}px`;i
-    }
-}
-*/
-
 document.addEventListener("DOMContentLoaded", () => {
     createEmbed("video-with-chat");
     document.getElementById("toggle-chat").addEventListener("click", toggleChat);
+    document.getElementById("toggle-embed").addEventListener("click", toggleEmbed);
     handleResize();
     window.addEventListener("resize", handleResize);
 });
