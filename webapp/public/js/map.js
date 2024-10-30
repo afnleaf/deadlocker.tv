@@ -39,6 +39,8 @@ let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
 let penType = "opaque";
+let eraseLastX = undefined;
+let eraseLastY = undefined;
 
 /* all layers ----------------------------------------------------- */
 
@@ -466,7 +468,19 @@ function draw(e) {
             drawCtx.stroke();
         }
     } else if(currentMode === 'eraser') {
-        eraseAtPoint(x, y);
+        const [lastX, lastY] = [eraseLastX, eraseLastY];
+        if(lastX !== undefined && lastY !== undefined) {
+            const steps = Math.ceil(Math.hypot(x - lastX, y - lastY) * 50);
+            for(let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const interpX = lastX + (x - lastX) * t;
+                const interpY = lastY + (y - lastY) * t;
+                eraseAtPoint(interpX, interpY);
+            }
+        } else {
+            eraseAtPoint(x, y);
+        }
+        [eraseLastX, eraseLastY] = [x, y];
     }
 }
 
@@ -482,6 +496,7 @@ function startDrawing(e) {
             penType: penType
         };
     } else if (currentMode === 'eraser'){
+        [eraseLastX, eraseLastY] = [undefined, undefined];
         eraseAtPoint(x, y);
     }
 }
@@ -493,6 +508,9 @@ function stopDrawing() {
         }
         currentPath = null;
     }
+    if(currentMode === 'eraser') {
+        [eraseLastX, eraseLastY] = [undefined, undefined];
+    } 
     isDrawing = false;
 }
 
