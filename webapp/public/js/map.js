@@ -451,7 +451,7 @@ function createDraggableIcon(iconName) {
             const normX = x / iconLayer.width;
             const normY = y / iconLayer.height;
 
-            addIcon(iconName, selectedSide, normX, normY);
+            addIcon(iconName, selectedSide);
         }
         if(clone) {
             clone.remove();
