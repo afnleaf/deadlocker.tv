@@ -1,6 +1,5 @@
 # Commands
-from here https://forums.playdeadlock.com/threads/dead-air-how-to-make-a-config-useful-commands-simple-guide.15718/
-
+Many commands were copied from <a href="https://forums.playdeadlock.com/threads/dead-air-how-to-make-a-config-useful-commands-simple-guide.15718/" target="_blank">here</a>
 
 ### Solo streets mode with cheats
 ```
@@ -14,6 +13,13 @@ citadel_hero_testing_infinite_money true;
 This combination of commands loads you into the map with cheats enabled, allowing you to explore freely and buy whatever items you wish from anywhere.
 
 
+### New HP Bar
+```
+citadel_unit_status_use_new true;
+```
+Enables the new health bar style.
+
+
 ### Cheats
 ```
 sv_cheats 1;
@@ -23,19 +29,20 @@ Or 0 for cheats off.
 
 ### Change region
 ```
-citadel_region_override
+citadel_region_override;
 ```
 You can change your server region in Deadlock. Use (-1) for automatic, (0) for NA, (1) for EU, (2) for Asia, (3) for SA, and (5) for Oceania.
 
+
 #### enable/disable hud
 ```
-citadel_hud_visible
+citadel_hud_visible;
 ```
 
 
 ### Crosshair
 ```
-citadel_crosshair_pip_gap
+citadel_crosshair_pip_gap;
 ```
 This command lets you adjust the gap the crosshair. Allows for negative values which is impossible to do in the settings.
 
@@ -68,60 +75,57 @@ engine_low_latency_sleep_after_client_tick "true";
 
 ### Nvidia Low Latency
 ```
-r_low_latency 2
+r_low_latency 2;
 ```
 
 
 ### Shorcuts
 ```
-alias "d" "disconnect"
+alias "d" "disconnect";
 ```
 Auto types commands with one letter.
 
 ```
-alias "q" "quit"
+alias "q" "quit";
 ```
+
 ```
-alias "s" "status"
+alias "s" "status";
 ```
+
 ```
-alias "rs" "mp_restartgame 1"
+alias "rs" "mp_restartgame 1";
 ```
 
 ### Voice toggle
 ```
-bind "J" toggle voice_modenable true false
+bind "J" toggle voice_modenable true;
 ```
-Toggles voice chat on or off.
+Toggles voice chat on(true) or off(false).
 
 
 ### Rate
 ```
 rate 196608 
 ```
-Chose between 62500 - 1000000 depending on internet bandwidth. Don't exceed 80% of your internet bandwidth.
+Choose between 62500 - 1000000 depending on internet bandwidth. Don't exceed 80% of your internet bandwidth.
 
 
 ### Recording settings
 ```
-bind "J" toggle citadel_hud_visible true false
+bind "J" toggle citadel_hud_visible true;
 ```
-Turns hud on / off.
+Turns hud on(true) or off(false).
 
 ```
-bind "J" toggle cl_lock_camera true false
+bind "J" toggle cl_lock_camera true;
 ```
-Locks camera.
+Locks camera, (true/false)
 
 ```
-bind "J" toggle cl_showpos 1 0
+bind "J" toggle cl_showpos 1 0;
 ```
 Shows hero position and velocity.
-
-```
-bind "J" toggle citadel_hide_replay_hud true false
-```
-Turns replay hud on / off (Currently disabled after last patch)
 
 ```
 bind "J" toggle host_timescale 1 0.2
@@ -129,7 +133,8 @@ bind "J" toggle host_timescale 1 0.2
 Toggles the speed of the game for cinematics.
 
 ```
-bind "J" "incrementvar citadel_observer_roaming_speed 600 2400 300"```
+bind "J" "incrementvar citadel_observer_roaming_speed 600 2400 300"
+```
 Cycle through various speeds of the spectator camera.
 
 ```
@@ -140,37 +145,37 @@ Displays unit IDs.
 
 ### build version & HUD
 ```
-r_show_build_info 0
-cl_hud_telemetry_ping_show 0
-cl_hud_telemetry_net_misdelivery_show 0
-cl_hud_telemetry_frametime_show 0
-citadel_display_new_player_recommendations false
-citadel_playtest_warning_count 2
+r_show_build_info 0;
+cl_hud_telemetry_ping_show 0;
+cl_hud_telemetry_net_misdelivery_show 0;
+cl_hud_telemetry_frametime_show 0;
+citadel_display_new_player_recommendations false;
+citadel_playtest_warning_count 2;
 ```
 
 
 ### Tooltips
 ```
-gameinstructor_enable false
-citadel_hint_system_disable true
+gameinstructor_enable false;
+citadel_hint_system_disable true;
 ```
 
 
 ### Testing Tools
 ```
-bind "X" toggle citadel_hero_testing_enabled true false 
+bind "X" toggle citadel_hero_testing_enabled true; 
 ```
 Allows use of sandbox testing tools anywhere.
 
 ```
-bind "X" noclip
+bind "X" noclip;
 ```
 Toggles noclip.
 
 ```
-bind "X" toggle hud_damagemeter 1 0
+bind "X" toggle hud_damagemeter 1;
 ```
-Turns dps meter on / off.
+Turns dps meter on(1) / off(0).
 
 ```
 citadel_hero_testing_enabled 1;
@@ -179,19 +184,19 @@ citadel_allow_duplicate_heroes 1;
 ```
 
 ```
-citadel_allow_purchasing_anywhere 1
+citadel_allow_purchasing_anywhere 1;
 ```
 Allows buying items anywhere.
 
 
 ### Spawn Items
 ```
-bind "X" ent_create citadel_item_pickup
+bind "X" ent_create citadel_item_pickup;
 ```
 Spawn soul urn.
 
 ```
-bind "X" ent_create citadel_item_pickup_rejuv
+bind "X" ent_create citadel_item_pickup_rejuv;
 ```
 Spawn rejuvenator.
 
@@ -199,30 +204,31 @@ Spawn rejuvenator.
 ### Spawn NPCs
 
 ```
-bind "X" npc_create neutral_trooper_weak
+bind "X" npc_create neutral_trooper_weak;
 ```
 Jungle Camp T1.
 
 ```
-bind "X" npc_create neutral_trooper_strong
+bind "X" npc_create neutral_trooper_strong;
 ```
 Jungle Camp T2.
 
 ```
-bind "X" npc_create neutral_trooper_normal
+bind "X" npc_create neutral_trooper_normal;
 ```
 Jungle Camp T3.
 
 ```
-bind "X" npc_create npc_super_neutral
+bind "X" npc_create npc_super_neutral;
 ```
 Mid boss.
 
 ```
-bind "X" toggle citadel_solo_bot_match 1 0
+bind "X" toggle citadel_solo_bot_match 1;
 ```
+1 or 0
 
 ```
-bind "X" citadel_create_unit hero_haze
+bind "X" citadel_create_unit hero_haze;
 ```
 Enemy hero.

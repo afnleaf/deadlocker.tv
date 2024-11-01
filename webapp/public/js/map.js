@@ -10,7 +10,7 @@ const bgImage = new Image();
 let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
-const MIN_ZOOM = 0.3;
+const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 2;
 // perf
 let isZooming = false;
@@ -383,18 +383,91 @@ function createDraggableIcon(iconName) {
     //icon.src = `/public/images/hero_icons/${iconName}.png`;
     icon.src = `/public/images/hero_icons/default/${iconName}.png`;
     icon.className = 'menu-icon';
-    icon.style.width = '25px';
-    icon.style.height = '25px';
+    icon.style.width = '24px';
+    icon.style.height = '24px';
     icon.style.cursor = 'grab';
     icon.draggable = true;
     icon.dataset.icon = iconName;
 
+    // mouse handling
     icon.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', iconName);
     });
 
+    // touch handling
+    let touchTimeout;
+    let isDraggingMenuIcon = false;
+    let clone = null;
+    
+    icon.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        
+        clone = icon.cloneNode(true);
+        clone.style.position = 'fixed';
+        clone.style.width = `${BASE_ICON_SIZE}px`;
+        clone.style.height = `${BASE_ICON_SIZE}px`;
+        clone.style.opacity = '0.8';
+        clone.style.pointerEvents = 'none';
+        clone.style.zIndex = '1000';
+
+        clone.style.left = `${touch.clientX - (BASE_ICON_SIZE/2)}px`;
+        clone.style.top = `${touch.clientY - (BASE_ICON_SIZE/2)}px`;
+
+        document.body.appendChild(clone);
+        isDraggingMenuIcon = true;
+    });
+
+    icon.addEventListener('touchmove', (e) => {
+        if(!isDraggingMenuIcon || !clone) return;
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        clone.style.left = `${touch.clientX - (BASE_ICON_SIZE/2)}px`;
+        clone.style.top = `${touch.clientY - (BASE_ICON_SIZE/2)}px`;
+    });
+
+    icon.addEventListener('touchend', (e) => {
+        if(!isDraggingMenuIcon || !clone) return;
+        e.preventDefault();
+        
+        const touch = e.changedTouches[0];
+        const selectedSide = document.querySelector('input[name="sideSwitch"]:checked').value;
+
+        const containerRect = container.getBoundingClientRect();
+        if( touch.clientX >= containerRect.left &&
+            touch.clientX <= containerRect.right &&
+            touch.clientY >= containerRect.top &&
+            touch.clientY <= containerRect.bottom ) {
+            
+            const x = (touch.clientX - containerRect.left) / containerRect.width;
+            const y = (touch.clientY - containerRect.left) / containerRect.height;
+
+            addIcon(iconName, selectedSide, x, y);
+        }
+        if(clone) {
+            clone.remove();
+            clone.null;
+        }
+        isDraggingMenuIcon = false;
+    });
+
+    icon.addEventListener('touchcancel', (e) => {
+        if(clone) {
+            clone.remove();
+            clone = null;
+        }
+        isDraggingMenuIcon = false;
+    });
+
     return icon;
 }
+
+container.addEventListener('touchmove', (e) => {
+    if(e.target.classList.contains('menu-icon') || e.target.classList.contains('icon-clone')) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 container.addEventListener('dragover', (e) => {
     e.preventDefault();
