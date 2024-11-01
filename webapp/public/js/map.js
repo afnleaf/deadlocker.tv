@@ -10,7 +10,7 @@ const bgImage = new Image();
 let zoomLevel = 0.7;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
-const MIN_ZOOM = 0.1;
+const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 2;
 // perf
 let isZooming = false;
@@ -251,7 +251,7 @@ function stopDraggingMap() {
 
 /* icon layer ----------------------------------------------------- */
 
-function addIcon(iconName, side, x = 100, y = 100) {
+function addIcon(iconName, side, x = 0.5, y = 0.5) {
     let teamColor = '';
     if(side === 'amber') {
         teamColor = 'rgba(221, 179, 92, 0.8)';
@@ -273,7 +273,8 @@ function addIcon(iconName, side, x = 100, y = 100) {
     icon.style.width = `${BASE_ICON_SIZE}px`;
     icon.style.height = `${BASE_ICON_SIZE}px`;
     icon.style.transform = `scale(${1 / zoomLevel})`;
-    icon.style.transformOrigin = 'top left';
+    //icon.style.transformOrigin = 'top left';
+    icon.style.transformOrigin = 'center';
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -440,10 +441,17 @@ function createDraggableIcon(iconName) {
             touch.clientY >= containerRect.top &&
             touch.clientY <= containerRect.bottom ) {
             
-            const x = (touch.clientX - containerRect.left) / containerRect.width;
-            const y = (touch.clientY - containerRect.left) / containerRect.height;
+            //const x = (touch.clientX - containerRect.left) / containerRect.width;
+            //const y = (touch.clientY - containerRect.left) / containerRect.height;
+            
+            const iconLayerRect = iconLayer.getBoundingClientRect();
+            const x = (touch.clientX - iconLayerRect.left) / zoomLevel;
+            const y = (touch.clientY - iconLayerRect.top) / zoomLevel;
 
-            addIcon(iconName, selectedSide, x, y);
+            const normX = x / iconLayer.width;
+            const normY = y / iconLayer.height;
+
+            addIcon(iconName, selectedSide, normX, normY);
         }
         if(clone) {
             clone.remove();
