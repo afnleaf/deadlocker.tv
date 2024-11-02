@@ -273,8 +273,8 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
     icon.style.width = `${BASE_ICON_SIZE}px`;
     icon.style.height = `${BASE_ICON_SIZE}px`;
     icon.style.transform = `scale(${1 / zoomLevel})`;
-    //icon.style.transformOrigin = 'top left';
-    icon.style.transformOrigin = 'center';
+    icon.style.transformOrigin = 'top left';
+    //icon.style.transformOrigin = 'center';
     // team style
     icon.style.borderRadius = '50%';
     icon.style.display = 'block';
@@ -445,8 +445,8 @@ function createDraggableIcon(iconName) {
             //const y = (touch.clientY - containerRect.left) / containerRect.height;
             
             const iconLayerRect = iconLayer.getBoundingClientRect();
-            const x = (touch.clientX - iconLayerRect.left) / iconLayer.width;
-            const y = (touch.clientY - iconLayerRect.top) / iconLayer.height;
+            const x = (touch.clientX - iconLayerRect.left) / iconLayerRect.width;
+            const y = (touch.clientY - iconLayerRect.top) / iconLayerRect.height;
 
             //addIcon(iconName, selectedSide);
             addIcon(iconName, selectedSide, x, y);
