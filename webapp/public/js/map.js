@@ -445,13 +445,11 @@ function createDraggableIcon(iconName) {
             //const y = (touch.clientY - containerRect.left) / containerRect.height;
             
             const iconLayerRect = iconLayer.getBoundingClientRect();
-            const x = (touch.clientX - iconLayerRect.left) / zoomLevel;
-            const y = (touch.clientY - iconLayerRect.top) / zoomLevel;
+            const x = (touch.clientX - iconLayerRect.left) / iconLayer.width;
+            const y = (touch.clientY - iconLayerRect.top) / iconLayer.height;
 
-            const normX = x / iconLayer.width;
-            const normY = y / iconLayer.height;
-
-            addIcon(iconName, selectedSide);
+            //addIcon(iconName, selectedSide);
+            addIcon(iconName, selectedSide, x, y);
         }
         if(clone) {
             clone.remove();
