@@ -10,4 +10,5 @@ services:
       - ./webapp/public:/app/public
     environment:
       - PORT=4444
+    restart: unless-stopped
 

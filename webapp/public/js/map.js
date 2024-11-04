@@ -39,8 +39,14 @@ let lastY = 0;
 let lineWidth = 5;
 let lineColor = "#FFFFFF";
 let penType = "opaque";
+// eraser 
 let eraseLastX = undefined;
 let eraseLastY = undefined;
+let lastTouchX = undefined;
+let lastTouchY = undefined;
+let touchStartTime = undefined;
+const TOUCH_SAMPLE_RATE = 16;
+let lastTouchSampleTime = 0;
 
 /* all layers ----------------------------------------------------- */
 
@@ -529,7 +535,9 @@ function redrawCanvas() {
 function draw(e) {
     if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
     e.preventDefault();
+    
     const [x, y] = getEventPos(drawingCanvas, e);
+    
     if(currentMode === 'pen') {
         currentPath.points.push({x, y});
         // only redraw current stroke while drawing
@@ -547,19 +555,52 @@ function draw(e) {
             drawCtx.stroke();
         }
     } else if(currentMode === 'eraser') {
-        const [lastX, lastY] = [eraseLastX, eraseLastY];
-        if(lastX !== undefined && lastY !== undefined) {
-            const steps = Math.ceil(Math.hypot(x - lastX, y - lastY) * 50);
-            for(let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const interpX = lastX + (x - lastX) * t;
-                const interpY = lastY + (y - lastY) * t;
-                eraseAtPoint(interpX, interpY);
+        const currentTime = Date.now();
+        
+        // touch
+        if(e.type.startsWith('touch')) {
+            // throttle touch events
+            if(currentTime - lastTouchSampleTime < TOUCH_SAMPLE_RATE) {
+                return
             }
+            lastTouchSampleTime = currentTime;
+            if(lastTouchX !== undefined && lastTouchY !== undefined) {
+                // velocity based interpolation points
+                const timeDelta = currentTime - touchStartTime;
+                const distance = Math.hypot(x - lastTouchX, y - lastTouchY);
+                const speed = distance / timeDelta;
+                // adjust number of interpolation steps based on speed
+                const baseSteps = Math.ceil(distance * 50);
+                const speedFactor = Math.min(Math.max(speed * 2, 1), 3);
+                const steps = Math.ceil(baseSteps * speedFactor);
+
+                // interpolate points
+                for(let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const interpX = lastTouchX + (x - lastTouchX) * t;
+                    const interpY = lastTouchY + (y - lastTouchY) * t;
+                    eraseAtPoint(interpX, interpY);
+                }
+            } else {
+                eraseAtPoint(x, y);
+            }
+            [lastTouchX, lastTouchY] = [x, y];
+        // mouse
         } else {
-            eraseAtPoint(x, y);
+            const [lastX, lastY] = [eraseLastX, eraseLastY];
+            if(lastX !== undefined && lastY !== undefined) {
+                const steps = Math.ceil(Math.hypot(x - lastX, y - lastY) * 50);
+                for(let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const interpX = lastX + (x - lastX) * t;
+                    const interpY = lastY + (y - lastY) * t;
+                    eraseAtPoint(interpX, interpY);
+                }
+            } else {
+                eraseAtPoint(x, y);
+            }
+            [eraseLastX, eraseLastY] = [x, y];
         }
-        [eraseLastX, eraseLastY] = [x, y];
     }
 }
 
@@ -575,7 +616,13 @@ function startDrawing(e) {
             penType: penType
         };
     } else if (currentMode === 'eraser'){
-        [eraseLastX, eraseLastY] = [undefined, undefined];
+        if(e.type.startsWith('touch')) {
+            [lastTouchX, lastTouchY] = [undefined, undefined];
+            touchStartTime = Date.now();
+            lastTouchSampleTime = touchStartTime;
+        } else {
+            [eraseLastX, eraseLastY] = [undefined, undefined];
+        }
         eraseAtPoint(x, y);
     }
 }
@@ -589,13 +636,16 @@ function stopDrawing() {
     }
     if(currentMode === 'eraser') {
         [eraseLastX, eraseLastY] = [undefined, undefined];
+        [lastTouchX, lastTouchY] = [undefined, undefined];
+        touchStartTime = undefined;
     } 
     isDrawing = false;
 }
 
 function eraseAtPoint(x, y) {
-    const eraserRadius = (lineWidth * zoomLevel) / (2 * drawingCanvas.width);
-    //const eraserRadius = 1 / (2 * drawingCanvas.width); 
+    const isTouchDevice = 'ontouchstart' in window;
+    let baseRadius = (lineWidth * zoomLevel) / (2 * drawingCanvas.width);
+    const eraserRadius = isTouchDevice ? baseRadius * 1.5 : baseRadius;
     paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
     redrawCanvas();
 }
