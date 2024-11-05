@@ -21,37 +21,68 @@ templ Map() {
                         </div>
                     </div>
                 </div>
-                <button type="button" data-alt="f" id="delMode" class="mode-button tooltip-button">Delete Icon</button>
-                <button type="button" data-alt="i" id="moveIconMode" class="mode-button tooltip-button">Move Icon</button>
-                <button type="button" data-alt="m" id="moveMapMode" class="mode-button tooltip-button">Move Map</button>
-                <button type="button" data-alt="x" id="clearIcons" class="tooltip-button">Clear Icons</button>
+                <button type="button" data-alt="(f) delete icon" id="delMode" class="mode-button tooltip-button">
+                    <img src="/public/images/control_icons/delete-icon.svg" width="24" height="24" alt="delete-icon" class="button-icon">
+                </button>
+                <button type="button" data-alt="(i) move icon" id="moveIconMode" class="mode-button tooltip-button">
+                    <img src="/public/images/control_icons/move-icon.svg" width="24" height="24" alt="move-icon" class="button-icon">
+                </button>
+                <button type="button" data-alt="(x) clear icons" id="clearIcons" class="tooltip-button">
+                    <img src="/public/images/control_icons/clear-icons.svg" width="24" height="24" alt="clear-icons" class="button-icon">
+                </button>
+                <button type="button" data-alt="(m) move map" id="moveMapMode" class="mode-button tooltip-button">
+                    <img src="/public/images/control_icons/move-map.svg" width="24" height="24" alt="move-map" class="button-icon">
+                </button>
                 <label> | </label>
-                <button type="button" data-alt="d" id="penMode" class="mode-button tooltip-button active">Draw</button>
-                <button type="button" data-alt="e" id="eraserMode" class="mode-button tooltip-button">Eraser</button>
-                <button type="button" data-alt="z" id="undo" class="tooltip-button">Undo</button>
-                <button type="button" data-alt="c" id="clearPen" class="tooltip-button">Clear</button>
+                <button type="button" data-alt="(d) draw" id="penMode" class="mode-button tooltip-button active">
+                    <img src="/public/images/control_icons/pen.svg" width="24" height="24" alt="pen" class="button-icon">
+                </button>
+                <button type="button" data-alt="(e) erase" id="eraserMode" class="mode-button tooltip-button">
+                    <img src="/public/images/control_icons/eraser.svg" width="24" height="24" alt="eraser" class="button-icon">
+                </button>
+                <button type="button" data-alt="(z) undo" id="undo" class="tooltip-button">
+                    <img src="/public/images/control_icons/undo.svg" width="24" height="24" alt="undo" class="button-icon">
+                </button>
+                <button type="button" data-alt="(c) clear" id="clearPen" class="tooltip-button">
+                    <img src="/public/images/control_icons/clear.svg" width="24" height="24" alt="clear" class="button-icon">
+                </button>
+                <!--
                 <div>
                     <label for="lineWidth"></label>
                     <select id="lineWidth">
-                        <option value="1">1px</option>
-                        <option value="3">3px</option>
-                        <option value="5">5px</option>
-                        <option value="8" selected>8px</option>
-                        <option value="12">12px</option>
-                        <option value="15">15px</option>
-                        <option value="20">20px</option>
+                        <option value="1">&bull;</option>
+                        <option value="3">&bull;</option>
+                        <option value="5">&bull;</option>
+                        <option value="8" selected>&bull;</option>
+                        <option value="12">&bull;</option>
+                        <option value="15">&bull;</option>
+                        <option value="20">&bull;</option>
+                    </select>
+                </div>
+                -->
+                <div>
+                    <label for="lineWidth"></label>
+                    <select id="lineWidth">
+                        <option value="1">•</option>
+                        <option value="3">••</option>
+                        <option value="5">•••</option>
+                        <option value="8" selected>••••</option>
+                        <option value="12">•••••</option>
+                        <option value="15">••••••</option>
+                        <option value="20">•••••••</option>
                     </select>
                 </div>
                 <div>
                     <label for="lineColor"></label>
                     <select id="lineColor">
-                        <option value="#FFFFFF">White</option>
-                        <option value="#000000">Black</option>
-                        <option value="#00FFFF">Cyan</option>
-                        <option value="#FFFF00">Yellow</option>
-                        <option value="#FF00FF">Magenta</option>
+                        <option value="#FFFFFF"></option>
+                        <option value="#000000"></option>
+                        <option value="#00FFFF"></option>
+                        <option value="#FFFF00"></option>
+                        <option value="#FF00FF"></option>
                     </select>
                 </div>
+                <!--
                 <div> 
                     <label for="penType"></label>
                     <select id="penType">
@@ -59,6 +90,7 @@ templ Map() {
                         <option value="highlighter">Highlighter</option>
                     </select>
                 </div>
+                -->
                 <div class="control-column">
                     <a href="/">
                         <img id="home" src="/public/images/deadlock_logo_only.svg" alt="home" width="32" height="32">

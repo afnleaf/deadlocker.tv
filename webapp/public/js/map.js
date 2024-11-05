@@ -892,6 +892,7 @@ lineWidthMenu.addEventListener('change', (e) => {
 const lineColorMenu = document.getElementById('lineColor'); 
 lineColorMenu.addEventListener('change', (e) => {
     lineColor = e.target.value;
+    lineColorMenu.style.backgroundColor = lineColor;
     switchToPenMode();
 });
 

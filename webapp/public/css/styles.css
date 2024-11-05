@@ -404,9 +404,11 @@ button.copy-button {
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
-    padding: 3px;
-    border: 4px solid var(--kobicha);
+    /* padding: 3px; */
+    border: 1px solid var(--kobicha);
     border-radius: 4px;
+    height: 38px;
+    align-items: center;
 }
 
 .menu-icon {
@@ -440,6 +442,98 @@ button.copy-button {
     margin-right: 2px;
 }
 
+/*
+#lineWidth option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+#lineWidth option::before {
+    content: '';
+    display: inline-block;
+    width: var(--size);
+    height: var(--size);
+    background-color: currentColor;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+#lineWidth option[value="1"] { --size: 1px; }
+#lineWidth option[value="3"] { --size: 3px; }
+#lineWidth option[value="5"] { --size: 5px; }
+#lineWidth option[value="8"] { --size: 8px; }
+#lineWidth option[value="12"] { --size: 12px; }
+#lineWidth option[value="15"] { --size: 15px; }
+#lineWidth option[value="20"] { --size: 20px; }
+*/
+
+/*
+.mode-button svg, .tooltip-button svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.mode-button.active svg {
+    color: #your-highlight-color;
+}
+
+.mode-button, .tooltip-button {
+    padding: 6px 8px;
+    line-height: 1;
+}
+*/
+
+#lineWidth {
+    width: 76px;
+    height: 38px;
+}
+
+#lineColor {
+    width: 38px;
+    height: 38px;
+    /*
+    padding: 2px;
+    border: 3px solid #333;
+    background-color: transparent;
+    cursor: pointer;
+    */
+}
+
+#lineColor option {
+    width: 38px;
+    height: 38px;
+    /*padding: 10px; */
+    /*border: none; */
+}
+
+/* Remove default styling */
+#lineColor:focus {
+    outline: none;
+}
+
+#lineColor, #lineColor option {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Hover effect */
+#lineColor option:hover {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+}
+
+/* Color blocks - the main select will inherit the background of the selected option */
+#lineColor { background-color: var(--selected-color, #FFFFFF); }
+#lineColor option[value="#FFFFFF"] { background-color: white; --selected-color: white; }
+#lineColor option[value="#000000"] { background-color: black; --selected-color: black; }
+#lineColor option[value="#00FFFF"] { background-color: cyan; --selected-color: cyan; }
+#lineColor option[value="#FFFF00"] { background-color: yellow; --selected-color: yellow; }
+#lineColor option[value="#FF00FF"] { background-color: magenta; --selected-color: magenta; }
+
 #home {
     width: 32px;
     height: 32px;
@@ -455,8 +549,12 @@ select, button {
     background-color: var(--smoky-black);
     color: var(--khaki);
     border: 1px solid var(--kobicha);
-    padding: 8px;
+    /* padding: 8px; */
     border-radius: 4px;
+    height: 38px;
+    width: 38px;
+    align-items: center;
+    justify-content: center;
 }
 
 button {
@@ -483,14 +581,17 @@ button.tooltip-button::after {
     content: attr(data-alt);
     opacity: 0;
     position: absolute;
-    top: -50%;
+    top: -10%;
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--smoky-black);
     border: 1px solid var(--kobicha);
-    padding: 6px 6px;
+    padding: 6px 12px;
+    min-width: 40px;
+    white-space: nowrap;
     border-radius: 4px;
     z-index: 1;
+    pointer-events: none
 }
 
 button.tooltip-button:hover::after {
