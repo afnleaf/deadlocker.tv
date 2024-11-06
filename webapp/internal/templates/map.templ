@@ -8,7 +8,19 @@ templ Map() {
             <div id="controls">
                 <button id="toggleIconMenu">&#9658;</button>
                 <div id="iconMenu">
-                    <div id="iconSelect"></div>
+                    <div id="iconSelect">
+                        <div id="sideSelect">
+                        <div class="sideOption">
+                            <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
+                            <label for="amber" id="amberLabel"></label>
+                        </div>
+                        <div class="sideOption">
+                            <input type="radio" id="sapphire" name="sideSwitch" value="sapphire">
+                            <label for="sapphire" id="sapphireLabel"></label>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- 
                     <div class="control-column">
                         <div id="sideSelect">
                             <div class="sideOption">
@@ -21,6 +33,7 @@ templ Map() {
                             </div>
                         </div>
                     </div>
+                    -->
                 </div>
                 <button type="button" data-alt="(f) delete icon" id="delMode" class="mode-button tooltip-button">
                     <img src="/public/images/control_icons/delete-icon.svg" width="24" height="24" alt="delete-icon" class="button-icon">

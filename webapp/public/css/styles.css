@@ -432,6 +432,7 @@ button.copy-button {
 #iconMenu {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     background-color: var(--smoky-black);
     border: 1px solid var(--kobicha);
@@ -441,39 +442,15 @@ button.copy-button {
 
 /* Icon selection area - base styles */
 #iconSelect {
-    display: grid;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
     padding: 4px;
     overflow-x: auto;
     width: max-content;
-    max-width: 90vw;
-}
-
-/* Desktop layout (> 768px) */
-@media screen and (min-width: 768px) {
-    #iconSelect {
-        grid-template-columns: repeat(22, 24px);
-        grid-auto-flow: column;
-        grid-template-rows: 24px;
-    }
-}
-
-/* Tablet layout (480px - 768px) */
-@media screen and (min-width: 480px) and (max-width: 767px) {
-    #iconSelect {
-        grid-template-columns: repeat(11, 24px);
-        grid-template-rows: repeat(2, 24px);
-        max-height: 56px; /* 2 rows + gap + padding */
-    }
-}
-
-/* Mobile layout (< 480px) */
-@media screen and (max-width: 479px) {
-    #iconSelect {
-        grid-template-columns: repeat(8, 24px);
-        grid-template-rows: repeat(3, 24px);
-        max-height: 84px; /* 3 rows + gaps + padding */
-    }
+    max-width: 80vw;
+    align-items: center;
 }
 
 /* Firefox-specific adjustments */
@@ -557,14 +534,28 @@ button.copy-button {
 }
 
 #sideSelect {
+    /*
     display: flex;
     flex-direction: row;
     gap: 8px;
     padding: 4px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    */
+    gap: 8px;
+    display: flex;
+    margin-left: 2px;
 }
 
 .sideOption {
+    display: flex;
     position: relative;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
 }
 
 /* hide default radio buttons */
@@ -596,8 +587,9 @@ button.copy-button {
 }
 
 #amber:checked + #amberLabel {
-    background-color: rgba(221, 179, 92, 0.9);
+    background-color: rgba(221, 179, 92, 1);
     border-color: #DDB35C;
+    transform: scale(1.05);
 }
 
 /* sapphire styling */
@@ -607,16 +599,15 @@ button.copy-button {
 }
 
 #sapphire:checked + #sapphireLabel {
-    background-color: rgba(95, 118, 227, 0.9);
+    background-color: rgba(95, 118, 227, 1);
     border-color: #5F76E3;
+    transform: scale(1.05);
 }
 
 /* hover effects */
 .sideOption label:hover {
-    transform: scale(1.05);
+    transform: scale(2);
 }
-
-
 
 #sapphireLabel {
     color: var(--sapphire);
@@ -694,7 +685,7 @@ button.copy-button {
 .color-options {
     position: absolute;
     top: 100%;
-    left: 0;
+    left: -5%;
     display: none;
     background: #1a1a1a;
     border: 1px solid #333;
@@ -717,7 +708,7 @@ button.copy-button {
 .color-option:hover {
     outline: 2px solid #fff;
     outline-offset: -2px;
-}e
+}
 
 #home {
     width: 32px;
