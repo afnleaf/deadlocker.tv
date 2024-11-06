@@ -676,6 +676,11 @@ button.copy-button {
     cursor: pointer;
 }
 
+.button-icon {
+    align-items: center;
+    justify-content: center;
+}
+
 select, button {
     background-color: var(--smoky-black);
     color: var(--khaki);
