@@ -432,7 +432,7 @@ button.copy-button {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
     padding: 4px;
-    max-width: 50vw ; /* Adjust based on your needs */
+    max-width: 80vw ; /* Adjust based on your needs */
     overflow-x: auto;
 }
 
