@@ -6,18 +6,19 @@ templ Map() {
     @Base(false, false) {
         <div class="map-container">
             <div id="controls">
-                <div class="control-column">
-                    <div id="iconMenu"></div>
-                </div>
-                <div class="control-column">
-                    <div id="sideSelect">
-                        <div class="sideOption">
-                            <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
-                            <label for="amber">Amber</label>
-                        </div>
-                        <div class="sideOption">
-                            <input type="radio" id="sapphire" name="sideSwitch" value="sapphire">
-                            <label for="sapphire">Sapphire</label>
+                <button id="toggleIconMenu">&#9658;</button>
+                <div id="iconMenu">
+                    <div id="iconSelect"></div>
+                    <div class="control-column">
+                        <div id="sideSelect">
+                            <div class="sideOption">
+                                <input type="radio" id="amber" name="sideSwitch" value="amber" checked>
+                                <label for="amber" id="amberLabel">Amber</label>
+                            </div>
+                            <div class="sideOption">
+                                <input type="radio" id="sapphire" name="sideSwitch" value="sapphire">
+                                <label for="sapphire" id="sapphireLabel">Sapphire</label>
+                            </div>
                         </div>
                     </div>
                 </div>

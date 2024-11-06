@@ -241,7 +241,6 @@ footer p {
     color: var(--dutch-white);o
 }
 
-
 .resources {
     display: flex;
     justify-content: center;
@@ -399,20 +398,78 @@ button.copy-button {
     margin: 2px;
     align-items: center;
 }
-
-#iconMenu {
+/*
+#iconSelect {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
     gap: 2px;
-    /* padding: 3px; */
     border: 1px solid var(--kobicha);
     border-radius: 4px;
     height: 38px;
     align-items: center;
 }
 
+#iconMenu {
+    display: flex;
+    flex-direction: column;
+    margin: 2px;
+    align-items: center;
+}
+*/
+
+/* Icon menu container */
+#iconMenu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: var(--smoky-black);
+    border: 1px solid var(--kobicha);
+    border-radius: 4px;
+}
+
+/* Icon selection area */
+#iconSelect {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr); /* Adjust number based on icons per row */
+    padding: 4px;
+    max-width: 100% ; /* Adjust based on your needs */
+    overflow-x: auto;
+}
+
+#toggleIconMenu {
+    position: relative;
+    background-color: var(--smoky-black);
+    color: var(--khaki);
+    border: 1px solid var(--kobicha);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+#toggleIconMenu:hover {
+    background-color: var(--kobicha);
+    color: var(--dutch-white);
+}
+
+/*
 .menu-icon {
+}
+*/
+
+/* Individual menu icons */
+.menu-icon {
+    width: 24px;
+    height: 24px;
+    cursor: grab;
+    padding: 2px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
     pointer-events: auto;
+}
+
+.menu-icon:hover {
+    background-color: var(--kobicha);
 }
 
 .draggable-icon {
@@ -440,6 +497,16 @@ button.copy-button {
 
 .sideOption input[type="radio"] {
     margin-right: 2px;
+}
+
+#sapphireLabel {
+    color: var(--sapphire);
+    font-weight: 900;
+}
+
+#amberLabel {
+    color: var(--amber);
+    font-weight: 900;
 }
 
 /*

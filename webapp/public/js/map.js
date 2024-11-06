@@ -378,11 +378,11 @@ function dragIcon(e) {
     draggedIcon.style.top = `${newY}px`;
 }
 
-const iconMenu = document.getElementById('iconMenu');
+const iconSelect = document.getElementById('iconSelect');
 const iconNames = ['Abrams', 'Bebop', 'Dynamo', 'GreyTalon', 'Haze', 'Infernus', 'Ivy', 'Kelvin', 'LadyGeist', 'Lash', 'McGinnis', 'Mirage', 'Mo&Krill', 'Paradox', 'Pocket', 'Seven', 'Shiv', 'Vindicta', 'Viscous', 'Warden', 'Wraith', 'Yamato'];
 iconNames.forEach(iconName => {
     const draggableIcon = createDraggableIcon(iconName);
-    iconMenu.appendChild(draggableIcon);
+    iconSelect.appendChild(draggableIcon);
 });
 
 function createDraggableIcon(iconName) {
@@ -896,11 +896,13 @@ lineColorMenu.addEventListener('change', (e) => {
     switchToPenMode();
 });
 
+/*
 const penTypeMenu = document.getElementById('penType');
 penTypeMenu.addEventListener('change', (e) => {
     penType = e.target.value;
     switchToPenMode();
 });
+*/
 
 /* keyboard event listeners */
 document.addEventListener('keydown', checkKeydown);
@@ -945,6 +947,16 @@ function checkKeydown(e) {
             break;
     }
 }
+
+let iconMenuVis = true;
+function toggleIconMenu() {
+    iconMenuVis = !iconMenuVis;
+    const iconMenu = document.getElementById("iconMenu");
+    iconMenu.style.display = iconMenuVis ? "flex" : "none";
+    document.getElementById("toggleIconMenu").innerHTML = iconMenuVis ? "&#9658;" : "&#9668;";
+}
+const iconMenuButton = document.getElementById("toggleIconMenu")
+iconMenuButton.addEventListener("click", toggleIconMenu);
 
 /* initial setup defaults ----------------------------------------- */
 bgImage.onload = () => {
