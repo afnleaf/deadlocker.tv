@@ -430,7 +430,7 @@ button.copy-button {
 /* Icon selection area */
 #iconSelect {
     display: grid;
-    grid-template-columns: repeat(11, 1fr); /* Adjust number based on icons per row */
+    grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
     padding: 4px;
     max-width: 50vw ; /* Adjust based on your needs */
     overflow-x: auto;
