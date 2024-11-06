@@ -73,6 +73,7 @@ templ Map() {
                         <option value="20">•••••••</option>
                     </select>
                 </div>
+                <!--
                 <div>
                     <label for="lineColor"></label>
                     <select id="lineColor">
@@ -82,6 +83,20 @@ templ Map() {
                         <option value="#FFFF00"></option>
                         <option value="#FF00FF"></option>
                     </select>
+                </div>
+                -->
+                <div>
+                    <label for="lineColor"></label>
+                    <div class="color-picker-container">
+                        <button type="button" class="color-button" id="currentColor" style="background-color: #FFFFFF"></button>
+                        <div class="color-options" id="colorOptions">
+                            <div class="color-option" data-color="#FFFFFF" style="background-color: #FFFFFF"></div>
+                            <div class="color-option" data-color="#000000" style="background-color: #000000"></div>
+                            <div class="color-option" data-color="#00FFFF" style="background-color: #00FFFF"></div>
+                            <div class="color-option" data-color="#FFFF00" style="background-color: #FFFF00"></div>
+                            <div class="color-option" data-color="#FF00FF" style="background-color: #FF00FF"></div>
+                        </div>
+                    </div>
                 </div>
                 <!--
                 <div> 

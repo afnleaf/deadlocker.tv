@@ -889,12 +889,14 @@ lineWidthMenu.addEventListener('change', (e) => {
     switchToPenMode();
 });
 
+/*
 const lineColorMenu = document.getElementById('lineColor'); 
 lineColorMenu.addEventListener('change', (e) => {
     lineColor = e.target.value;
     lineColorMenu.style.backgroundColor = lineColor;
     switchToPenMode();
 });
+*/
 
 /*
 const penTypeMenu = document.getElementById('penType');
@@ -957,6 +959,40 @@ function toggleIconMenu() {
 }
 const iconMenuButton = document.getElementById("toggleIconMenu")
 iconMenuButton.addEventListener("click", toggleIconMenu);
+
+// tassfasdas
+// Simple color picker logic
+const currentColor = document.getElementById('currentColor');
+const colorOptions = document.getElementById('colorOptions');
+
+// Toggle menu on button click
+currentColor.addEventListener('click', function() {
+    if (colorOptions.style.display === 'block') {
+        colorOptions.style.display = 'none';
+    } else {
+        colorOptions.style.display = 'block';
+    }
+});
+
+// Change color on selection
+colorOptions.addEventListener('click', function(e) {
+    if (e.target.classList.contains('color-option')) {
+        const color = e.target.dataset.color;
+        currentColor.style.backgroundColor = color;
+        colorOptions.style.display = 'none';
+        lineColor = color;
+        switchToPenMode();
+    }
+});
+
+// Hide when clicking outside
+document.addEventListener('click', function(e) {
+    if (!currentColor.contains(e.target) && !colorOptions.contains(e.target)) {
+        colorOptions.style.display = 'none';
+    }
+});
+
+
 
 /* initial setup defaults ----------------------------------------- */
 bgImage.onload = () => {
