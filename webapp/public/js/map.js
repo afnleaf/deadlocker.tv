@@ -6,8 +6,9 @@ const drawingCanvas = document.getElementById('drawingCanvas');
 const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingCanvas.getContext('2d');
 const bgImage = new Image();
+const BG_IMAGE_FILEPATH = '/public/images/DeadlockMapFull.png';
 // zoom
-let zoomLevel = 0.7;
+let zoomLevel = 0.4;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.2;
@@ -223,7 +224,7 @@ bgImage.onload = () => {
 };
 //bgImage.src = '/public/images/DeadlockMiniMap.png';
 //bgImage.src = '/public/images/Map.png';
-bgImage.src = '/public/images/UpscaledMap.png';
+bgImage.src = BG_IMAGE_FILEPATH;
 
 function drawBackground() {
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
