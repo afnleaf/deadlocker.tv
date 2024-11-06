@@ -4,7 +4,7 @@
 set -e
 
 # recreat templ files
-if ! cd templ generate; then
+if ! templ generate; then
   echo "Failed to generate templ files"
   exit 1
 fi
@@ -21,12 +21,8 @@ if ! go build -o main ./cmd/server; then
 fi
 
 # run the server
-if ! ./main.exe ; then
+if ! ./main; then
   echo "Failed to build run"
   exit 1
 fi
-#if ! ./main ; then
-#  echo "Failed to build run"
-#  exit 1
-#fi
 

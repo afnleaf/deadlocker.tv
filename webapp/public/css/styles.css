@@ -402,6 +402,32 @@ button.copy-button {
     justify-content: center;
 }
 
+/*
+#iconMenu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: var(--smoky-black);
+    border: 1px solid var(--kobicha);
+    border-radius: 4px;
+    min-width: fit-content;
+}
+
+
+#iconSelect {
+    display: grid;
+    grid-template-columns: repeat(22, 24px);
+    padding: 4px;
+    max-width: 70vw ;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    min-width: min-content;
+    width: max-content;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+}
+*/
+    /* grid-template-columns: repeat(auto-fit, minmax(24px, 1fr)); */
 /* Icon menu container */
 #iconMenu {
     display: flex;
@@ -410,15 +436,58 @@ button.copy-button {
     background-color: var(--smoky-black);
     border: 1px solid var(--kobicha);
     border-radius: 4px;
+    max-width: 100%;
 }
 
-/* Icon selection area */
+/* Icon selection area - base styles */
 #iconSelect {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
+    gap: 4px;
     padding: 4px;
-    max-width: 70vw ; /* Adjust based on your needs */
     overflow-x: auto;
+    width: max-content;
+    max-width: 90vw;
+}
+
+/* Desktop layout (> 768px) */
+@media screen and (min-width: 768px) {
+    #iconSelect {
+        grid-template-columns: repeat(22, 24px);
+        grid-auto-flow: column;
+        grid-template-rows: 24px;
+    }
+}
+
+/* Tablet layout (480px - 768px) */
+@media screen and (min-width: 480px) and (max-width: 767px) {
+    #iconSelect {
+        grid-template-columns: repeat(11, 24px);
+        grid-template-rows: repeat(2, 24px);
+        max-height: 56px; /* 2 rows + gap + padding */
+    }
+}
+
+/* Mobile layout (< 480px) */
+@media screen and (max-width: 479px) {
+    #iconSelect {
+        grid-template-columns: repeat(8, 24px);
+        grid-template-rows: repeat(3, 24px);
+        max-height: 84px; /* 3 rows + gaps + padding */
+    }
+}
+
+/* Firefox-specific adjustments */
+@-moz-document url-prefix() {
+    #iconSelect {
+        scrollbar-width: thin;
+    }
+    
+    /* Maintain grid layout in Firefox */
+    @media screen and (min-width: 768px) {
+        #iconSelect {
+            grid-auto-columns: 24px;
+        }
+    }
 }
 
 #toggleIconMenu {
@@ -447,10 +516,32 @@ button.copy-button {
     border-radius: 4px;
     transition: background-color 0.2s ease;
     pointer-events: auto;
+    object-fit: contain;
+    -moz-transform-origin: center;
 }
 
 .menu-icon:hover {
     background-color: var(--kobicha);
+}
+
+/* Ensure icons don't shrink */
+.menu-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@-moz-document url-prefix() {
+    #iconSelect {
+        grid-auto-flow: row;
+        grid-auto-columns: min-content;
+        grid-template-rows: 24px;
+    }
+    
+    .menu-icon {
+        min-width: 24px;
+        min-height: 24px;
+    }
 }
 
 .draggable-icon {
