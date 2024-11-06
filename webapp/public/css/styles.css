@@ -484,6 +484,7 @@ button.copy-button {
     cursor: grabbing !important;
 }
 
+/*
 #sideSelect {
     display: flex;
     flex-direction: column;
@@ -498,6 +499,69 @@ button.copy-button {
 .sideOption input[type="radio"] {
     margin-right: 2px;
 }
+*/
+
+#sideSelect {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px;
+}
+
+.sideOption {
+    position: relative;
+}
+
+/* Hide default radio buttons */
+.sideOption input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Style labels as blocks */
+.sideOption label {
+    display: block;
+    padding: 8px 8px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+/* Amber styling */
+#amberLabel {
+    background-color: rgba(221, 179, 92, 0.5);
+    color: #DDB35C;
+}
+
+#amber:checked + #amberLabel {
+    background-color: rgba(221, 179, 92, 0.9);
+    border-color: #DDB35C;
+}
+
+/* Sapphire styling */
+#sapphireLabel {
+    background-color: rgba(95, 118, 227, 0.5);
+    color: #5F76E3;
+}
+
+#sapphire:checked + #sapphireLabel {
+    background-color: rgba(95, 118, 227, 0.9);
+    border-color: #5F76E3;
+}
+
+/* Hover effects */
+.sideOption label:hover {
+    transform: scale(1.05);
+}
+
+
 
 #sapphireLabel {
     color: var(--sapphire);
