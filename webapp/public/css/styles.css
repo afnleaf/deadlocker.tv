@@ -507,7 +507,7 @@ button.copy-button {
     height: 100%;
     object-fit: contain;
 }
-
+/*
 @-moz-document url-prefix() {
     #iconSelect {
         grid-auto-flow: row;
@@ -520,6 +520,7 @@ button.copy-button {
         min-height: 24px;
     }
 }
+*/
 
 .draggable-icon {
     pointer-events: auto;

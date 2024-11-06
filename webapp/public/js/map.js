@@ -7,8 +7,9 @@ const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingCanvas.getContext('2d');
 const bgImage = new Image();
 const BG_IMAGE_FILEPATH = '/public/images/DeadlockMapFull.png';
+//const BG_IMAGE_FILEPATH = '/public/images/maps_old/UpscaledMap.png';
 // zoom
-let zoomLevel = 0.4;
+let zoomLevel = 0.75;
 let mapOffsetX = 0;
 let mapOffsetY = 0;
 const MIN_ZOOM = 0.2;
@@ -55,12 +56,12 @@ function resizeCanvas() {
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
 
-    mapCanvas.width = bgImage.width;
-    mapCanvas.height = bgImage.height;
-    iconLayer.width = bgImage.width * 2;
-    iconLayer.height = bgImage.height * 2;
-    drawingCanvas.width = bgImage.width * 2;
-    drawingCanvas.height = bgImage.height * 2;
+    mapCanvas.width = bgImage.width / 2;
+    mapCanvas.height = bgImage.height / 2;
+    iconLayer.width = bgImage.width;
+    iconLayer.height = bgImage.height;
+    drawingCanvas.width = bgImage.width;
+    drawingCanvas.height = bgImage.height;
    
     [mapCanvas, iconLayer, drawingCanvas].forEach((layer) => {
         layer.style.width = `${layer.width}px`;
@@ -73,10 +74,10 @@ function resizeCanvas() {
 }
 
 function updateMapPosition() {
-    const scale = zoomLevel;
-    mapCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
-    iconLayer.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
-    drawingCanvas.style.transform = `translate(${mapOffsetX}px, ${mapOffsetY}px) scale(${scale})`;
+    const transform = `translate3d(${mapOffsetX}px, ${mapOffsetY}px, 0) scale(${zoomLevel})`;
+    mapCanvas.style.transform = transform;
+    iconLayer.style.transform = transform;
+    drawingCanvas.style.transform = transform;
 }
 
 function getEventPos(canvas, e) {
