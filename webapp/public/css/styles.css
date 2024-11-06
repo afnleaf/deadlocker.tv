@@ -432,7 +432,7 @@ button.copy-button {
     display: grid;
     grid-template-columns: repeat(11, 1fr); /* Adjust number based on icons per row */
     padding: 4px;
-    max-width: 45vw ; /* Adjust based on your needs */
+    max-width: 50vw ; /* Adjust based on your needs */
     overflow-x: auto;
 }
 
