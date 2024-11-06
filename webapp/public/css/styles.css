@@ -401,24 +401,6 @@ button.copy-button {
     align-items: center;
     justify-content: center;
 }
-/*
-#iconSelect {
-    display: flex;
-    flex-direction: row;
-    gap: 2px;
-    border: 1px solid var(--kobicha);
-    border-radius: 4px;
-    height: 38px;
-    align-items: center;
-}
-
-#iconMenu {
-    display: flex;
-    flex-direction: column;
-    margin: 2px;
-    align-items: center;
-}
-*/
 
 /* Icon menu container */
 #iconMenu {
@@ -435,7 +417,7 @@ button.copy-button {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
     padding: 4px;
-    max-width: 80vw ; /* Adjust based on your needs */
+    max-width: 70vw ; /* Adjust based on your needs */
     overflow-x: auto;
 }
 
