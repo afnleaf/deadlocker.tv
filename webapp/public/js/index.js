@@ -3,24 +3,47 @@
 let embed;
 let chatVis = true;
 let embedVis = true;
+let currentChannelIndex = 0;
+const channels = ["deadlockertv", "mikaels1", "piggyxdd", "y4mz"];
 
-function createEmbed(layout) {
+function createEmbed(layout, channelIndex = 0) {
     if(embed) {
         embed.destroy();
     }
 
+    currentChannelIndex = channelIndex;
+    const channel = channels[currentChannelIndex];
+    console.log(`${channel} test.`);
+
     embed = new Twitch.Embed("twitch-embed", {
         width: "100%",
         height: "100%",
-        channel: "deadlockertv",
+        channel: channel,
         layout: layout,
         autoplay: false,
+    });
+    
+    embed.addEventListener(Twitch.Embed.OFFLINE, () => {
+        console.log(`${channel} is offline.`);
+        goNextChannel(layout);
     });
 
     embed.addEventListener(Twitch.Embed.VIDEO_READY, () => {
         var player = embed.getPlayer();
         player.play();
     });
+
+    embed.addEventListener(Twitch.Embed.VIDEO_ERROR, () => {
+        console.log(`${channel} error.`);
+        goNextChannel(layout);                
+    });
+}
+
+function goNextChannel(layout) {
+    const nextIndex = (currentChannelIndex + 1) % channels.length;
+    if(nextIndex !== currentChannelIndex) {
+        createEmbed(layout, nextIndex);
+    } 
 }
 
 function toggleChat() {
