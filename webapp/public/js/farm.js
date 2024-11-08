@@ -5,37 +5,35 @@
 //const trooper_base0 = 76;
 //const trooper_base10 = 104;
 const trooper_base0 = 75;
-const trooper_base10 = 90;
-const sjungle_base = 44;
-const mjungle_base = 88;
-const ljungle_base = 220;
-const sinners_base = 300;
+//const trooper_base10 = 90;
+const sjungle_base = 42;
+const mjungle_base = 84;
+const ljungle_base = 210;
+const sinners_base = 330;
 // unit scale
-//const trooper_scale0 = 1.0; 
-//const trooper_scale10 = 2.0;
 const trooper_scale0 = 1.1; 
 const trooper_scale5 = 1.0; 
-const trooper_scale10 = 1.24;
+//const trooper_scale10 = 1.24;
 const sjungle_scale = 0.528;
 const mjungle_scale = 1.06;
 const ljungle_scale = 2.64;
 const sinners_scale = 3.96;
 // base value objectives
-const guardians_base = 179;
-const guardians_orbs = 96;
+const guardians_base = 175;
+const guardians_orbs = 100;
 //const guardians_team = 1375;
-const walkers_base = 455;
-const walkers_orbs = 245;
+const walkers_base = 500;
+const walkers_orbs = 250;
 //const walkers_team = 3750;
 const shrines_base = 500;
 //const shrines_team = 3000;
 const urn_base = 4025;
 const urn_increase = 1150;
 const urn_carrier_scale = 1.25;
-const crate_base = 30;
-const crate_scale = 2.5;
-const kill_base = 225;
-const kill_scale = 26;
+const crate_base = 36;
+const crate_scale = 3;
+const kill_base = 175;
+const kill_scale = 40.55;
 // spawn times
 const spawn_small = 2;
 const spawn_medium = 5;
@@ -47,10 +45,13 @@ const spawn_urn = 10;
 
 // individual units
 function calcTrooper(x) {
+    /*
     const base = x < spawn_final ? trooper_base0 : trooper_base10;
     const scale = x < spawn_final ? trooper_scale0 * x : trooper_scale10 * x;
     const increment = Math.floor((x - 10) / 5);
     return base + (scale) + (trooper_scale5 * increment);
+    */
+    return trooper_base0 + trooper_scale0 * x;
 }
 
 function calcSmallJungle(x) {
