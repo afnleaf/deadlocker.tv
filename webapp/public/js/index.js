@@ -3,7 +3,7 @@
 let embed;
 let chatVis = true;
 let embedVis = true;
-let currentChannelIndex = 0;
+let currentChannelIndex = -1;
 const channels = ["deadlockertv", "mikaels1", "piggyxdd", "y4mz", "vegas"];
 
 async function createEmbed(layout, channelIndex = 0) {
@@ -16,9 +16,10 @@ async function createEmbed(layout, channelIndex = 0) {
     console.log(`${channel} test.`);
    
     const isOnline = await checkChannelOnline(channel);
+    console.log(`${isOnline}`);
     if(!isOnline) {
         console.log(`${channel} is offline.`);
-        goNextChannel(layout);
+        //goNextChannel(layout);
     }
 
     embed = new Twitch.Embed("twitch-embed", {
@@ -42,6 +43,7 @@ async function createEmbed(layout, channelIndex = 0) {
 
 function checkChannelOnline(channel) {
     return new Promise((resolve) => {
+        console.log(`check if ${channel} online.`);
         // create fake html
         const t = document.createElement('div');
         t.style.display = 'none';
@@ -60,36 +62,57 @@ function checkChannelOnline(channel) {
         const timeout = setTimeout(() => {
             t.remove();
             resolve(false);
-        }, 5000);
+        }, 20000);
 
         tE.addEventListener(Twitch.Embed.OFFLINE, () => {
+            console.log(`${channel} offline`)
             clearTimeout(timeout);
-            tE.remove();
+            t.remove();
             resolve(false);
         });
 
-        tE.addEventListener(Twitch.Embed.VIDEO_READY, () => {
+        tE.addEventListener(Twitch.Embed.ONLINE, () => {
+            console.log(`${channel} online`)
             clearTimeout(timeout);
-            tE.remove();
+            t.remove();
             resolve(true);
         });
 
         tE.addEventListener(Twitch.Embed.VIDEO_ERROR, () => {
+            console.log(`${channel} error`)
             clearTimeout(timeout);
-            tE.remove();
+            t.remove();
             resolve(false);
         });
     });
 }
 
 /*
-function goNextChannel(layout) {
-    const nextIndex = (currentChannelIndex + 1) % channels.length;
-    if(nextIndex !== currentChannelIndex) {
-        createEmbed(layout, nextIndex);
-    } 
+async function findOnlineChannel() {
+    let i = 0;
+    channels.forEach(async (channel) => {
+        const isOnline = await checkChannelOnline(channel);
+        if(isOnline) {
+            return i;
+        } else {
+            console.log(`${channel} is offline.`);
+        }
+        i++;
+    });
+    return -1;
 }
 */
+
+async function findOnlineChannel() {
+    for (let i = 0; i < channels.length; i++) {
+        const isOnline = await checkChannelOnline(channels[i]);
+        if(isOnline) {
+            return i;
+        }
+        console.log(`${channels[i]} is offline.`);
+    }
+    return -1;
+}
 
 async function goNextChannel(layout) {
     const startIndex = currentChannelIndex;
@@ -110,7 +133,7 @@ async function goNextChannel(layout) {
 
 function toggleChat() {
     chatVis = !chatVis;
-    createEmbed(chatVis ? "video-with-chat" : "video");
+    createEmbed(chatVis ? "video-with-chat" : "video", currentChannelIndex);
     document.getElementById("toggle-chat").textContent = chatVis ? "Hide Chat": "Show Chat";
 }
 
@@ -132,9 +155,15 @@ function handleResize() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    toggleEmbed();
-    createEmbed("video-with-chat");
+document.addEventListener("DOMContentLoaded", async () => {
+    currentChannelIndex = await findOnlineChannel();
+    console.log(currentChannelIndex);
+    if(currentChannelIndex >= 0) {
+        createEmbed("video-with-chat", currentChannelIndex);
+    } else {
+        createEmbed("video-with-chat");
+        toggleEmbed();
+    }
     document.getElementById("toggle-chat").addEventListener("click", toggleChat);
     document.getElementById("toggle-embed").addEventListener("click", toggleEmbed);
     handleResize();
