@@ -152,7 +152,7 @@ function calcChurch(x) {
     return calcMediumJungle(x) + (calcSmallJungle(x) * 4);
 }
 
-function calcGarage(x) {
+function calcMarket(x) {
     if (x < spawn_medium) return NaN;
     return (calcMediumJungle(x) * 3) + (calcSmallJungle(x) * 2);
 }
@@ -172,7 +172,7 @@ function generateSoulsTime() {
             aboveBoss: calcAboveBoss(x),
             midStore: calcMidStore(x),
             church: calcChurch(x),
-            garage: calcGarage(x),
+            market: calcMarket(x),
             smallJungle: calcSmallJungle(x),
             medJungle: calcMediumJungle(x),
             largeJungle: calcLargeJungle(x),
@@ -204,7 +204,7 @@ function generateSoulsHpTime() {
             aboveBoss: calcAboveBoss(x) / (1760 + 500 + 200),
             midStore: calcMidStore(x) / (500 + (200 * 3)),
             church: calcChurch(x) / (500 + (200 * 4)),
-            garage: calcGarage(x) / ((500 * 3) + (200 * 2)),
+            market: calcMarket(x) / ((500 * 3) + (200 * 2)),
             smallJungle: calcSmallJungle(x) / 200,
             medJungle: calcMediumJungle(x) / 500,
             largeJungle: calcLargeJungle(x) / 1760,
@@ -231,7 +231,7 @@ const lineProperties = {
     aboveBoss:      ["#F06292", false, "Camp Above Mid-boss"],
     midStore:       ["#FFA726", false, "Mid Store Camp"],
     church:         ["#8D6E63", false, "Church Camp"],
-    garage:         ["#78909C", false, "Garage Camp"],
+    market:         ["#78909C", false, "Market Camp"],
     crate:          ["#614B34", true, "Crate (40%)"],
     kill:           ["#9D0100", true, "Hero Kill"],
     urn:            ["#1DC7D6", true, "Urn"],
