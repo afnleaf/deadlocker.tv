@@ -4,7 +4,8 @@ let embed;
 let chatVis = true;
 let embedVis = true;
 let currentChannelIndex = -1;
-const channels = ["deadlockertv", "mikaels1", "piggyxdd", "y4mz", "vegas"];
+//const channels = ["deadlockertv", "mikaels1", "piggyxdd", "y4mz", "vegas"];
+const channels = ["deadlockertv"];
 
 async function createEmbed(layout, channelIndex = 0) {
     if(embed) {
@@ -156,13 +157,16 @@ function handleResize() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    toggleEmbed();    
     currentChannelIndex = await findOnlineChannel();
     console.log(currentChannelIndex);
+    //online
     if(currentChannelIndex >= 0) {
         createEmbed("video-with-chat", currentChannelIndex);
+        toggleEmbed();
+    //offline
     } else {
         createEmbed("video-with-chat");
-        toggleEmbed();
     }
     document.getElementById("toggle-chat").addEventListener("click", toggleChat);
     document.getElementById("toggle-embed").addEventListener("click", toggleEmbed);

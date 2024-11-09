@@ -1,10 +1,10 @@
 # Resources
 
-The mission of this website is to host or link to various resources that are useful for competitive Deadlock players.
+<!-- The mission of this website is to host or link to various resources that are useful for competitive Deadlock players. -->
 
 ## Apps
 - [Tactical Drawing Board](/map)
-- [Souls/Time Charts](/farm)
+- [Souls over Time Charts](/farm)
 
 ## Info
 - [Console Commands](/commands)
