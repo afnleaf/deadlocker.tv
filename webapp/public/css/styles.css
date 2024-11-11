@@ -631,6 +631,8 @@ button.copy-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
     cursor: pointer;
 }
 
@@ -690,7 +692,7 @@ button.active {
 }
 
 button.tooltip-button::after {
-    z-index: 1;
+    z-index: 2;
     content: attr(data-alt);
     position: absolute;
     top: -10%;
@@ -702,7 +704,7 @@ button.tooltip-button::after {
     min-width: 40px;
     white-space: nowrap;
     background-color: var(--smoky-black);
-    pointer-events: nonel;
+    pointer-events: none;
     opacity: 0;
 }
 
