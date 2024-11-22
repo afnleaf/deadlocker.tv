@@ -33,7 +33,7 @@ const urn_carrier_scale = 1.25;
 const crate_base = 36;
 const crate_scale = 3;
 const kill_base = 175;
-const kill_scale = 40.55;
+const kill_scale = 31.67;
 // spawn times
 const spawn_small = 2;
 const spawn_medium = 5;
@@ -388,8 +388,8 @@ const chart2 = new Chart(
 
 function resizeChart() { 
     const scrollbarH = window.innerWidth - document.documentElement.cientWidth;
-    const w = `${window.innerWidth - scrollbarH}px`;
-    const h = `${window.innerHeight - 50}px`
+    const w = `${window.innerWidth - scrollbarH - 10}px`;
+    const h = `${window.innerHeight - 50 - 10}px`
     const c1 = document.getElementById("chart1");
     const c2 = document.getElementById("chart2");
     c1.style.width = w; 
