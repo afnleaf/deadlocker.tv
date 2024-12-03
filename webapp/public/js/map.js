@@ -49,6 +49,11 @@ let lastTouchY = undefined;
 let touchStartTime = undefined;
 const TOUCH_SAMPLE_RATE = 16;
 let lastTouchSampleTime = 0;
+// selection
+let selectionMode = false;
+let selectedIcons = new Set();
+let selectionStart = null;
+let isSelecting = false;
 
 /* all layers ----------------------------------------------------- */
 
@@ -289,6 +294,7 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
     icon.style.background = teamColor;
     icon.style.border = '2px solid black';
     // event listeners
+    /*
     icon.addEventListener('mousedown', (e) => {
         if(currentMode === 'map') {
             switchToMoveIconMode();
@@ -299,6 +305,7 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
             deleteIcon(e);
         }
     });
+    */
     icon.addEventListener('touchstart', (e) => {
         if(currentMode === 'map') {
             switchToMoveIconMode();
@@ -308,7 +315,23 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
         } else if(currentMode === 'del') {
             deleteIcon(e);
         }
-    }); 
+    });
+    icon.addEventListener('mousedown', (e) => {
+        if(currentMode === 'map') {
+            switchToMoveIconMode();
+        }
+        if (currentMode === 'select') {
+            handleIconClick(e, icon);
+        } else if (currentMode === 'move') {
+            if (selectedIcons.has(icon) && selectedIcons.size > 1) {
+                startGroupDrag(e);
+            } else {
+                startDraggingIcon(e);
+            }
+        } else if (currentMode === 'del') {
+            deleteIcon(e)
+        }
+    });
     // add to layer
     iconLayer.appendChild(icon);
     icons.push(icon);
@@ -328,7 +351,14 @@ function startDraggingIcon(e) {
     if(currentMode !== 'move') return;
     e.preventDefault();
     e.stopPropagation(); // testing this
+
+    if(!selectedIcons.has(e.target)) {
+        selectedIcons.forEach(icon => removeSelectionIndicator(icon));
+        selectedIcons.clear();
+    }
+
     isDragging = true;
+    isDraggingIcon = true;
     draggedIcon = e.target;
 
     const rect = iconLayer.getBoundingClientRect();
@@ -345,16 +375,19 @@ function startDraggingIcon(e) {
 }
 
 function stopDraggingIcon() {
+    isDragging = false;
+    isDraggingIcon = false;
     if(draggedIcon) {
         draggedIcon.style.cursor = 'grab';
+        draggedIcon = null;
     }
-    isDragging = false;
-    draggedIcon = null;
 }
 
 function dragIcon(e) {
-    if(!isDragging || currentMode !== 'move' || !draggedIcon) return;
+    if(!isDragging || !isDraggingIcon || currentMode !== 'move' || !draggedIcon) return;
+    if(isGroupDragging) return;
     e.preventDefault();
+
     const rect = iconLayer.getBoundingClientRect();
     let clientX, clientY;
     
@@ -697,6 +730,208 @@ function isLineNearPoint(x1, y1, x2, y2, px, py, radius) {
     return distance <= radius;
 }
 
+/* select --------------------------------------------------------- */
+
+// overlay for visual selection
+const selectionOverlay = document.createElement('div');
+selectionOverlay.style.position = 'absolute';
+selectionOverlay.style.border = '1px solid rgba(0, 123, 255, 0.5)';
+selectionOverlay.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+selectionOverlay.style.pointerEvents = 'none';
+selectionOverlay.style.display = 'none';
+selectionOverlay.style.zIndex = '1000';
+document.querySelector('.canvas-container').appendChild(selectionOverlay);
+
+// selection indicator for icons
+function addSelectionIndicator(icon) {
+    icon.style.outline = '2px solid #007BFF';
+    icon.style.outlineOffset = '2px';
+}
+
+function removeSelectionIndicator(icon) {
+    icon.style.outline = 'none';
+    icon.style.outlineOffset = '0';
+}
+
+// selection rectangle
+function updateSelectionRect(startX, startY, currX, currY) {
+    const left = Math.min(startX, currX);
+    const top = Math.min(startY, currY);
+    const width = Math.abs(currX - startX);
+    const height = Math.abs(currY - startY);
+
+    selectionOverlay.style.left = `${left}px`;
+    selectionOverlay.style.top = `${top}px`;
+    selectionOverlay.style.width = `${width}px`;
+    selectionOverlay.style.height = `${height}px`;
+}
+
+function isIconInSelection(icon, selectionRect) {
+    const iconRect = icon.getBoundingClientRect();
+    const containerRect = document.querySelector('.canvas-container').getBoundingClientRect();
+
+    // convert coords to be relative to container
+    const iconLeft = iconRect.left - containerRect.left;
+    const iconTop = iconRect.top - containerRect.top;
+    
+    return !(iconLeft > selectionRect.right || 
+             iconLeft + iconRect.width < selectionRect.left || 
+             iconTop > selectionRect.bottom || 
+             iconTop + iconRect.height < selectionRect.top);
+}
+
+// group movement
+let groupDragStart = null;
+let groupOffsets = new Map();
+let isGroupDragging = false;
+let isDraggingIcon = false;
+
+function startGroupDrag(e) {
+    if(selectedIcons.size === 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    isGroupDragging = true;
+    isDragging = false;
+
+    const rect = iconLayer.getBoundingClientRect();
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+
+    groupDragStart = { x: clientX, y: clientY };
+    
+    // store initial offsets for all selected icons
+    selectedIcons.forEach(icon => {
+        groupOffsets.set(icon, {
+            //x: parseInt(icon.style.left) - (clientX - rect.left) / zoomLevel,
+            //y: parseInt(icon.style.top) - (clientY - rect.top) / zoomLevel
+            x: parseInt(icon.style.left),
+            y: parseInt(icon.style.top)
+        });
+    });
+}
+
+function moveGroup(e) {
+    if(!groupDragStart) return;
+    e.preventDefault();
+    
+    const rect = iconLayer.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+    const dx = ((clientX - groupDragStart.x) / zoomLevel);
+    const dy = ((clientY - groupDragStart.y) / zoomLevel);
+
+    selectedIcons.forEach(icon => {
+        const offset = groupOffsets.get(icon);
+        if(!offset) return;
+
+        let newX = offset.x + dx;
+        let newY = offset.y + dy;
+
+        // constrain within bounds
+        newX = Math.max(0, Math.min(newX, iconLayer.width - BASE_ICON_SIZE));
+        newY = Math.max(0, Math.min(newY, iconLayer.height - BASE_ICON_SIZE));
+        
+        icon.style.left = `${newX}px`;
+        icon.style.top = `${newY}px`;
+    });
+}
+
+function endGroupDrag() {
+    isGroupDragging = false;
+    groupDragStart = null;
+    groupOffsets.clear();
+}
+
+// selection handlers
+function startSelection(e) {
+    //if(!selectionMode) return;
+    if(currentMode !== 'select') return;
+
+    isSelecting = true;
+    const containerRect = document.querySelector('.canvas-container').getBoundingClientRect();
+    selectionStart = {
+        x: e.clientX - containerRect.left,
+        y: e.clientY - containerRect.top
+    }
+
+    // clear selection if not holding shift
+    if(!e.shiftKey) {
+        selectedIcons.forEach(icon => removeSelectionIndicator(icon));
+        selectedIcons.clear();
+    }
+
+    selectionOverlay.style.display = 'block';
+    updateSelectionRect(selectionStart.x, selectionStart.y, selectionStart.x, selectionStart.y);
+}
+
+function updateSelection(e) {
+    if(!isSelecting) return;
+
+    const containerRect = document.querySelector('.canvas-container').getBoundingClientRect();
+    const currentPos = {
+        x: e.clientX - containerRect.left,
+        y: e.clientY - containerRect.top
+    };
+    updateSelectionRect(selectionStart.x, selectionStart.y, currentPos.x, currentPos.y);
+
+    // calc selection rectangle
+    const selectionRect = {
+        left: Math.min(selectionStart.x, currentPos.x),
+        right: Math.max(selectionStart.x, currentPos.x),
+        top: Math.min(selectionStart.y, currentPos.y),
+        bottom: Math.max(selectionStart.y, currentPos.y)
+    };
+    
+    // update icon selection based on intersection
+    icons.forEach(icon => {
+        if(isIconInSelection(icon, selectionRect)) {
+            if(!selectedIcons.has(icon)) {
+                selectedIcons.add(icon);
+                addSelectionIndicator(icon);
+            }
+        } else if(!e.shiftKey) {
+            selectedIcons.delete(icon)
+            removeSelectionIndicator(icon);
+        }
+    });
+}
+
+function endSelection() {
+    isSelecting = false;
+    selectionOverlay.style.display = 'none';
+
+    const width = parseInt(selectionOverlay.style.width);
+    const height = parseInt(selectionOverlay.style.height);
+    if(selectedIcons.size > 0 && (width > 5 || height > 5)) {
+        switchToMoveIconMode();
+    }
+}
+
+function handleIconClick(e, icon) {
+    //if(!selectionMode) return;
+    if(currentMode != 'select') return;
+
+    e.stopPropagation();
+    e.preventDefault();
+
+    if(e.shiftKey) {
+        if(selectedIcons.has(icon)) {
+            selectedIcons.delete(icon);
+            removeSelectionIndicator(icon);
+        } else {
+            selectedIcons.add(icon);
+            addSelectionIndicator(icon);
+        }
+    } else {
+        selectedIcons.forEach(icon => removeSelectionIndicator(icon));
+        selectedIcons.clear();
+        selectedIcons.add(icon);
+        addSelectionIndicator(icon);
+    }
+}
+
 /* controls ------------------------------------------------------- */
 
 // is it possible to refactor all of this?
@@ -708,7 +943,7 @@ function switchToPenMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectIconsMode").classList.remove('active');
+        document.getElementById("selectMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
@@ -723,7 +958,7 @@ function switchToEraserMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
-        document.getElementById("selectIconsMode").classList.remove('active');
+        document.getElementById("selectMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
@@ -738,7 +973,7 @@ function switchToMoveIconMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectIconsMode").classList.remove('active');
+        document.getElementById("selectMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
@@ -753,7 +988,7 @@ function switchToMoveMapMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectIconsMode").classList.remove('active');
+        document.getElementById("selectMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
@@ -769,17 +1004,18 @@ function switchToDelIconMode() {
         document.getElementById('moveIconMode').classList.remove('active');
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectIconsMode").classList.remove('active');
+        document.getElementById("selectMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
     }
 }
 
-function switchToSelectIconsMode() {
+function switchToSelectMode() {
     if(currentMode !== 'select') {
         currentMode = 'select';
-        document.getElementById("selectIconsMode").classList.add('active');
+        //selectionMode = !selectionMode;
+        document.getElementById("selectMode").classList.add('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('moveIconMode').classList.remove('active');
@@ -832,6 +1068,31 @@ drawingCanvas.addEventListener('touchcancel', stopDrawing);
 // drag icon
 document.addEventListener('mousemove', dragIcon);
 document.addEventListener('mouseup', stopDraggingIcon);
+
+// selection
+container.addEventListener('mousedown', startSelection);
+container.addEventListener('mousemove', updateSelection);
+container.addEventListener('mouseup', endSelection);
+container.addEventListener('mousemove', moveGroup);
+container.addEventListener('mouseup', endGroupDrag);
+
+// group dragging
+document.addEventListener('mousemove', (e) => {
+    if(isGroupDragging) {
+        moveGroup(e);
+    } else if(isDraggingIcon) {
+        dragIcon(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if(isGroupDragging) {
+        endGroupDrag();
+    }
+    if(isDraggingIcon) {
+        stopDraggingIcon();
+    }
+});
 
 // resize event listeners
 window.addEventListener('resize', resizeCanvas);
@@ -892,8 +1153,8 @@ moveMapButton.addEventListener('click', switchToMoveMapMode);
 const clearIconsButton = document.getElementById('clearIcons');
 clearIconsButton.addEventListener('click', clearIcons);
 
-const selectIconsButton = document.getElementById("selectIconsMode");
-selectIconsButton.addEventListener('click', switchToSelectIconsMode);
+const selectButton = document.getElementById("selectMode");
+selectButton.addEventListener('click', switchToSelectMode);
 
 // right side of menu bar
 const penModeButton = document.getElementById('penMode');
@@ -969,6 +1230,10 @@ function checkKeydown(e) {
         // undo
         case 'z':
             undoDraw();
+            break;
+        // select
+        case 's':
+            switchToSelectMode();
             break;
         default:
             break;

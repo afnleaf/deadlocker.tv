@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   fill="#000000"
+   width="800"
+   height="800"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="select.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#383838"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:page
+       x="0"
+       y="0"
+       width="24"
+       height="24"
+       id="page2"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <path
+     d="M 1,7 V 3 A 1,1 0 0 1 2,2 H 6 A 1,1 0 0 1 6,4 H 3 V 7 A 1,1 0 0 1 1,7 Z M 2,22 H 6 A 1,1 0 0 0 6,20 H 3 v -3 a 1,1 0 0 0 -2,0 v 4 a 1,1 0 0 0 1,1 z m 21,-5 a 1,1 0 0 0 -2,0 v 3 h -3 a 1,1 0 0 0 0,2 h 4 a 1,1 0 0 0 1,-1 z M 17,3 a 1,1 0 0 0 1,1 h 3 v 3 a 1,1 0 0 0 2,0 V 3 A 1,1 0 0 0 22,2 h -4 a 1,1 0 0 0 -1,1 z m -7,19 h 4 a 1,1 0 0 0 0,-2 h -4 a 1,1 0 0 0 0,2 z M 23,10.5 a 1,1 0 0 0 -2,0 v 3 a 1,1 0 0 0 2,0 z m -21,4 a 1,1 0 0 0 1,-1 v -3 a 1,1 0 0 0 -2,0 v 3 a 1,1 0 0 0 1,1 z M 10,4 h 4 a 1,1 0 0 0 0,-2 h -4 a 1,1 0 0 0 0,2 z"
+     id="path1"
+     style="fill:#ffffff;fill-opacity:1;stroke-width:0.99999;stroke-dasharray:none" />
+</svg>

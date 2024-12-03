@@ -185,7 +185,7 @@ footer p {
     transition: background-color 0.3s ease;
     border: 1px solid var(--kobicha);
     border-radius: 4px;
-    padding 4px 4px;
+    padding: 4px 4px;
     background-color: var(--smoky-black);
     cursor: pointer;
     color: var(--khaki);
@@ -218,7 +218,7 @@ footer p {
 
 #toggle-embed:hover {
     background-color: var(--kbicha);
-    color: var(--dutch-white);o
+    color: var(--dutch-white);
 }
 
 .resources {
@@ -247,7 +247,7 @@ footer p {
 code {
     font-size: 0.9em;
     font-family: "Courier New", Courier, monospace;
-    color; var(--dutch-white)
+    color: var(--dutch-white);
 }
 
 pre {
@@ -276,7 +276,7 @@ button.copy-button {
 
 .chart-container {
     position: relative;
-    align: center;
+    align-items: center;
     margin: 5px auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     border-radius: 8px;
@@ -444,6 +444,7 @@ button.copy-button {
     cursor: grab;
     pointer-events: auto;
     object-fit: contain;
+    transform-origin: center;
     -moz-transform-origin: center;
 }
 
