@@ -708,6 +708,7 @@ function switchToPenMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
+        document.getElementById("selectIconsMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
@@ -722,6 +723,7 @@ function switchToEraserMode() {
         document.getElementById('moveMapMode').classList.remove('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
+        document.getElementById("selectIconsMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'auto';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'none';
@@ -736,6 +738,7 @@ function switchToMoveIconMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
+        document.getElementById("selectIconsMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'none';
         iconLayer.style.pointerEvents = 'auto';
@@ -750,6 +753,7 @@ function switchToMoveMapMode() {
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('delMode').classList.remove('active');
         document.getElementById('eraserMode').classList.remove('active');
+        document.getElementById("selectIconsMode").classList.remove('active');
         drawingCanvas.style.pointerEvents = 'none';
         mapCanvas.style.pointerEvents = 'auto';
         iconLayer.style.pointerEvents = 'none';
@@ -761,6 +765,22 @@ function switchToDelIconMode() {
     if(currentMode !== 'del') {
         currentMode = 'del';
         document.getElementById('delMode').classList.add('active');
+        document.getElementById('penMode').classList.remove('active');
+        document.getElementById('moveIconMode').classList.remove('active');
+        document.getElementById('moveMapMode').classList.remove('active');
+        document.getElementById('eraserMode').classList.remove('active');
+        document.getElementById("selectIconsMode").classList.remove('active');
+        drawingCanvas.style.pointerEvents = 'none';
+        mapCanvas.style.pointerEvents = 'none';
+        iconLayer.style.pointerEvents = 'auto';
+    }
+}
+
+function switchToSelectIconsMode() {
+    if(currentMode !== 'select') {
+        currentMode = 'select';
+        document.getElementById("selectIconsMode").classList.add('active');
+        document.getElementById('delMode').classList.remove('active');
         document.getElementById('penMode').classList.remove('active');
         document.getElementById('moveIconMode').classList.remove('active');
         document.getElementById('moveMapMode').classList.remove('active');
@@ -871,6 +891,9 @@ moveMapButton.addEventListener('click', switchToMoveMapMode);
 
 const clearIconsButton = document.getElementById('clearIcons');
 clearIconsButton.addEventListener('click', clearIcons);
+
+const selectIconsButton = document.getElementById("selectIconsMode");
+selectIconsButton.addEventListener('click', switchToSelectIconsMode);
 
 // right side of menu bar
 const penModeButton = document.getElementById('penMode');
