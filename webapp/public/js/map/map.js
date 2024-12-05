@@ -1,3 +1,5 @@
+// this is all of our "state"
+
 // content elements
 const container = document.querySelector('.canvas-container');
 const mapCanvas = document.getElementById('mapCanvas');
@@ -7,7 +9,6 @@ const mapCtx = mapCanvas.getContext('2d');
 const drawCtx = drawingCanvas.getContext('2d');
 const bgImage = new Image();
 const BG_IMAGE_FILEPATH = '/public/images/DeadlockMapFull.png';
-//const BG_IMAGE_FILEPATH = '/public/images/maps_old/UpscaledMap.png';
 // zoom
 let zoomLevel = 0.75;
 let mapOffsetX = 0;
@@ -54,6 +55,12 @@ let selectionMode = false;
 let selectedIcons = new Set();
 let selectionStart = null;
 let isSelecting = false;
+// group movement
+let groupDragStart = null;
+let groupOffsets = new Map();
+let isGroupDragging = false;
+let isDraggingIcon = false;
+
 
 /* all layers ----------------------------------------------------- */
 
@@ -780,11 +787,6 @@ function isIconInSelection(icon, selectionRect) {
              iconTop + iconRect.height < selectionRect.top);
 }
 
-// group movement
-let groupDragStart = null;
-let groupOffsets = new Map();
-let isGroupDragging = false;
-let isDraggingIcon = false;
 
 function startGroupDrag(e) {
     if(selectedIcons.size === 0) return;
