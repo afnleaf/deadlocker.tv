@@ -15,10 +15,15 @@ const CONFIG = {
     MIN_ZOOM: 0.2,
     MAX_ZOOM: 2,
     BASE_ICON_SIZE: 48,
+    DEFAULT_MODE: "pen",
     DEFAULT_LINE_WIDTH: 5,
     DEFAULT_LINE_COLOR: "#FFFFFF",
     DEFAULT_PEN_TYPE: "opaque",
     TOUCH_SAMPLE_RATE: 16,
+}
+
+const APP = {
+    currentMode: CONFIG.DEFAULT_MODE,
 }
 
 const bgImage = new Image();
@@ -74,11 +79,6 @@ let isDraggingIcon = false;
 /* all layers ----------------------------------------------------- */
 
 function resizeCanvas() {
-    /*
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    */
-
     DOM.mapCanvas.width = bgImage.width / 2;
     DOM.mapCanvas.height = bgImage.height / 2;
     DOM.iconLayer.width = bgImage.width;
@@ -179,7 +179,7 @@ function handleWheelZoom(e) {
 
     updateIconScales();
     resizeCanvas();
-    switchToMoveMapMode();
+    setMode('map');
 }
 
 // need to fix and add touch for icon drop in menu
@@ -223,7 +223,7 @@ function handleTouchZoom(e) {
     
     resizeCanvas();
     updateIconScales();
-    switchToMoveMapMode();
+    setMode('map');
 }
 
 function handleTouchStart(e) {
@@ -256,7 +256,7 @@ function drawBackground() {
 }
 
 function dragMap(e) {
-    if(!isDraggingMap || currentMode !== 'map') return;
+    if(!isDraggingMap || APP.currentMode !== 'map') return;
     e.preventDefault();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
@@ -270,7 +270,7 @@ function dragMap(e) {
 }
 
 function startDraggingMap(e) {
-    if(currentMode !== 'map') return;
+    if(APP.currentMode !== 'map') return;
     isDraggingMap = true;
     lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
     lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
@@ -296,7 +296,6 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
     icon.className = 'draggable-icon';
     // icon size and position
     icon.style.position = 'absolute';
-    //const rect = DOM.iconLayer.getBoundingClientRect();
     const mapX = (x * DOM.iconLayer.width);
     const mapY = (y * DOM.iconLayer.height);
     icon.style.left = `${mapX - CONFIG.BASE_ICON_SIZE}px`;
@@ -312,52 +311,40 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
     icon.style.background = teamColor;
     icon.style.border = '2px solid black';
     // event listeners
-    /*
-    icon.addEventListener('mousedown', (e) => {
-        if(currentMode === 'map') {
-            switchToMoveIconMode();
-        } 
-        if(currentMode === 'move') {
-            startDraggingIcon(e);
-        } else if(currentMode === 'del') {
-            deleteIcon(e);
-        }
-    });
-    */
     icon.addEventListener('touchstart', (e) => {
-        if(currentMode === 'map') {
-            switchToMoveIconMode();
+        if(APP.currentMode === 'map') {
+            setMode('icon');
         } 
-        if(currentMode === 'move') {
+        if(APP.currentMode === 'icon') {
             startDraggingIcon(e);
-        } else if(currentMode === 'del') {
+        } else if(APP.currentMode === 'del') {
             deleteIcon(e);
         }
     });
     icon.addEventListener('mousedown', (e) => {
-        if(currentMode === 'map') {
-            switchToMoveIconMode();
+        if(APP.currentMode === 'map') {
+            setMode('icon');
         }
-        if (currentMode === 'select') {
+        if (APP.currentMode === 'select') {
             handleIconClick(e, icon);
-        } else if (currentMode === 'move') {
+        } else if (APP.currentMode === 'icon') {
             if (selectedIcons.has(icon) && selectedIcons.size > 1) {
                 startGroupDrag(e);
             } else {
                 startDraggingIcon(e);
             }
-        } else if (currentMode === 'del') {
+        } else if (APP.currentMode === 'del') {
             deleteIcon(e)
         }
     });
     // add to layer
     DOM.iconLayer.appendChild(icon);
     icons.push(icon);
-    switchToMoveIconMode();
+    setMode('icon');
 }
 
 function deleteIcon(e) {
-    if(currentMode !== 'del') return;
+    if(APP.currentMode !== 'del') return;
     if(e.target.classList.contains('draggable-icon')) {
         const icon = e.target;
         icon.remove();
@@ -366,7 +353,7 @@ function deleteIcon(e) {
 }
 
 function startDraggingIcon(e) {
-    if(currentMode !== 'move') return;
+    if(APP.currentMode !== 'icon') return;
     e.preventDefault();
     e.stopPropagation(); // testing this
 
@@ -402,7 +389,7 @@ function stopDraggingIcon() {
 }
 
 function dragIcon(e) {
-    if(!isDragging || !isDraggingIcon || currentMode !== 'move' || !draggedIcon) return;
+    if(!isDragging || !isDraggingIcon || APP.currentMode !== 'icon' || !draggedIcon) return;
     if(isGroupDragging) return;
     e.preventDefault();
 
@@ -455,7 +442,6 @@ function createDraggableIcon(iconName) {
     });
 
     // touch handling
-    //let touchTimeout;
     let isDraggingMenuIcon = false;
     let clone = null;
     
@@ -504,7 +490,6 @@ function createDraggableIcon(iconName) {
             const x = (touch.clientX - iconLayerRect.left) / iconLayerRect.width;
             const y = (touch.clientY - iconLayerRect.top) / iconLayerRect.height;
 
-            //addIcon(iconName, selectedSide);
             addIcon(iconName, selectedSide, x, y);
         }
         if(clone) {
@@ -581,12 +566,12 @@ function redrawCanvas() {
 }
 
 function draw(e) {
-    if (!isDrawing || (currentMode !== 'pen' && currentMode !== 'eraser')) return;
+    if (!isDrawing || (APP.currentMode !== 'pen' && APP.currentMode !== 'eraser')) return;
     e.preventDefault();
     
     const [x, y] = getEventPos(DOM.drawingCanvas, e);
     
-    if(currentMode === 'pen') {
+    if(APP.currentMode === 'pen') {
         currentPath.points.push({x, y});
         // only redraw current stroke while drawing
         DOM.drawCtx.beginPath();
@@ -602,7 +587,7 @@ function draw(e) {
             DOM.drawCtx.lineJoin = 'round';
             DOM.drawCtx.stroke();
         }
-    } else if(currentMode === 'eraser') {
+    } else if(APP.currentMode === 'eraser') {
         const currentTime = Date.now();
         
         // touch
@@ -653,17 +638,17 @@ function draw(e) {
 }
 
 function startDrawing(e) {
-    if(currentMode !== 'pen' && currentMode !== 'eraser') return;
+    if(APP.currentMode !== 'pen' && APP.currentMode !== 'eraser') return;
     isDrawing = true;
     const [x, y] = getEventPos(DOM.drawingCanvas, e);
-    if(currentMode === 'pen') {
+    if(APP.currentMode === 'pen') {
         currentPath = {
             points: [{x, y}], 
             color: lineColor,
             width: lineWidth,
             penType: penType
         };
-    } else if (currentMode === 'eraser'){
+    } else if (APP.currentMode === 'eraser'){
         if(e.type.startsWith('touch')) {
             [lastTouchX, lastTouchY] = [undefined, undefined];
             touchStartTime = Date.now();
@@ -676,13 +661,13 @@ function startDrawing(e) {
 }
 
 function stopDrawing() {
-    if(isDrawing && currentMode !== 'eraser') {
+    if(isDrawing && APP.currentMode !== 'eraser') {
         if(currentPath != null) {
             paths.push(currentPath);
         }
         currentPath = null;
     }
-    if(currentMode === 'eraser') {
+    if(APP.currentMode === 'eraser') {
         [eraseLastX, eraseLastY] = [undefined, undefined];
         [lastTouchX, lastTouchY] = [undefined, undefined];
         touchStartTime = undefined;
@@ -802,7 +787,6 @@ function startGroupDrag(e) {
     isGroupDragging = true;
     isDragging = false;
 
-    //const rect = DOM.iconLayer.getBoundingClientRect();
     const clientX = e.clientX || e.touches[0].clientX;
     const clientY = e.clientY || e.touches[0].clientY;
 
@@ -823,7 +807,6 @@ function moveGroup(e) {
     if(!groupDragStart) return;
     e.preventDefault();
     
-    //const rect = DOM.iconLayer.getBoundingClientRect();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
 
@@ -855,10 +838,9 @@ function endGroupDrag() {
 // selection handlers
 function startSelection(e) {
     //if(!selectionMode) return;
-    if(currentMode !== 'select') return;
+    if(APP.currentMode !== 'select') return;
 
     isSelecting = true;
-    //const containerRect = document.querySelector('.canvas-container').getBoundingClientRect();
     const containerRect = DOM.container.getBoundingClientRect();
     selectionStart = {
         x: e.clientX - containerRect.left,
@@ -908,20 +890,19 @@ function updateSelection(e) {
 }
 
 function endSelection() {
-    if(currentMode !== 'select') return;
+    if(APP.currentMode !== 'select') return;
     isSelecting = false;
     selectionOverlay.style.display = 'none';
 
     const width = parseInt(selectionOverlay.style.width);
     const height = parseInt(selectionOverlay.style.height);
     if(selectedIcons.size > 0 && (width > 5 || height > 5)) {
-        switchToMoveIconMode();
+        setMode('icon');
     }
 }
 
 function handleIconClick(e, icon) {
-    //if(!selectionMode) return;
-    if(currentMode !== 'select') return;
+    if(APP.currentMode !== 'select') return;
 
     e.stopPropagation();
     e.preventDefault();
@@ -944,96 +925,53 @@ function handleIconClick(e, icon) {
 
 /* controls ------------------------------------------------------- */
 
-// is it possible to refactor all of this?
-function switchToPenMode() {
-    if(currentMode !== 'pen') {
-        currentMode = 'pen';
-        document.getElementById('penMode').classList.add('active');
-        document.getElementById('moveIconMode').classList.remove('active');
-        document.getElementById('moveMapMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectMode").classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'auto';
-        DOM.mapCanvas.style.pointerEvents = 'none';
-        DOM.iconLayer.style.pointerEvents = 'none';
-    }
+const MODE_BUTTONS = {
+    'pen': 'penMode',
+    'eraser': 'eraserMode', 
+    'icon': 'moveIconMode',
+    'map': 'moveMapMode',
+    'del': 'delMode',
+    'select': 'selectMode'
 }
 
-function switchToEraserMode() {
-    if(currentMode !== 'eraser') {
-        currentMode = 'eraser';
-        document.getElementById('eraserMode').classList.add('active');
-        document.getElementById('moveIconMode').classList.remove('active');
-        document.getElementById('moveMapMode').classList.remove('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById("selectMode").classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'auto';
-        DOM.mapCanvas.style.pointerEvents = 'none';
-        DOM.iconLayer.style.pointerEvents = 'none';
-    }
+const MODE_POINTER_EVENTS = {
+    'pen': 'drawing',
+    'eraser' : 'drawing',
+    'icon': 'icon',
+    'map': 'map',
+    'del': 'icon',
+    'select': 'icon',
 }
 
-function switchToMoveIconMode() {
-    if(currentMode !== 'move') {
-        currentMode = 'move';
-        document.getElementById('moveIconMode').classList.add('active');
-        document.getElementById('moveMapMode').classList.remove('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectMode").classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'none';
-        DOM.mapCanvas.style.pointerEvents = 'none';
-        DOM.iconLayer.style.pointerEvents = 'auto';
-    }
-}
+function setMode(mode) {
+    if(APP.currentMode === mode) return;
+    
+    APP.currentMode = mode;
 
-function switchToMoveMapMode() {
-    if(currentMode !== 'map') {
-        currentMode = 'map';
-        document.getElementById('moveMapMode').classList.add('active');
-        document.getElementById('moveIconMode').classList.remove('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectMode").classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'none';
-        DOM.mapCanvas.style.pointerEvents = 'auto';
-        DOM.iconLayer.style.pointerEvents = 'none';
+    // deactivate modes
+    Object.values(MODE_BUTTONS).forEach(id => {
+        document.getElementById(id).classList.remove('active');
+    });
 
-    }
-}
+    // set active mode
+    document.getElementById(MODE_BUTTONS[mode]).classList.add('active');
 
-function switchToDelIconMode() {
-    if(currentMode !== 'del') {
-        currentMode = 'del';
-        document.getElementById('delMode').classList.add('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('moveIconMode').classList.remove('active');
-        document.getElementById('moveMapMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        document.getElementById("selectMode").classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'none';
-        DOM.mapCanvas.style.pointerEvents = 'none';
-        DOM.iconLayer.style.pointerEvents = 'auto';
-    }
-}
+    // reset pointer events
+    DOM.drawingCanvas.style.pointerEvents = 'none';
+    DOM.mapCanvas.style.pointerEvents = 'none';
+    DOM.iconLayer.style.pointerEvents = 'none';
 
-function switchToSelectMode() {
-    if(currentMode !== 'select') {
-        currentMode = 'select';
-        //selectionMode = !selectionMode;
-        document.getElementById("selectMode").classList.add('active');
-        document.getElementById('delMode').classList.remove('active');
-        document.getElementById('penMode').classList.remove('active');
-        document.getElementById('moveIconMode').classList.remove('active');
-        document.getElementById('moveMapMode').classList.remove('active');
-        document.getElementById('eraserMode').classList.remove('active');
-        DOM.drawingCanvas.style.pointerEvents = 'none';
-        DOM.mapCanvas.style.pointerEvents = 'none';
-        DOM.iconLayer.style.pointerEvents = 'auto';
+    // set active layer pointer
+    switch(MODE_POINTER_EVENTS[mode]) {
+        case 'drawing':
+            DOM.drawingCanvas.style.pointerEvents = 'auto';
+            break;
+        case 'map':
+            DOM.mapCanvas.style.pointerEvents = 'auto';
+            break;
+        case 'icon':
+            DOM.iconLayer.style.pointerEvents = 'auto';
+            break;
     }
 }
 
@@ -1110,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', resizeCanvas);
 
 // delete icon
 DOM.iconLayer.addEventListener('mousedown', (e) => {
-    if(currentMode === 'del' && e.target.classList.contains('draggable-icon')) {
+    if(APP.currentMode === 'del' && e.target.classList.contains('draggable-icon')) {
         deleteIcon(e);
     }
 });
@@ -1152,26 +1090,26 @@ function addIconGet() {
 
 // left side of menu bar
 const deleteIconButton = document.getElementById('delMode');
-deleteIconButton.addEventListener('click', switchToDelIconMode);
+deleteIconButton.addEventListener('click', () => setMode('del'));
 
 const moveIconModeButton = document.getElementById('moveIconMode');
-moveIconModeButton.addEventListener('click', switchToMoveIconMode);
+moveIconModeButton.addEventListener('click', () => setMode('icon'));
 
 const moveMapButton = document.getElementById('moveMapMode');
-moveMapButton.addEventListener('click', switchToMoveMapMode);
+moveMapButton.addEventListener('click', () => setMode('map'));
 
 const clearIconsButton = document.getElementById('clearIcons');
 clearIconsButton.addEventListener('click', clearIcons);
 
 const selectButton = document.getElementById("selectMode");
-selectButton.addEventListener('click', switchToSelectMode);
+selectButton.addEventListener('click', () => setMode('select'));
 
 // right side of menu bar
 const penModeButton = document.getElementById('penMode');
-penModeButton.addEventListener('click', switchToPenMode);
+penModeButton.addEventListener('click', () => setMode('pen'));
 
 const eraserButton = document.getElementById('eraserMode');
-eraserButton.addEventListener('click', switchToEraserMode);
+eraserButton.addEventListener('click', () => setMode('eraser'));
 
 const undoButton = document.getElementById('undo');
 undoButton.addEventListener('click', undoDraw);
@@ -1182,7 +1120,7 @@ clearPenButton.addEventListener('click', clearDraw);
 const lineWidthMenu = document.getElementById('lineWidth');
 lineWidthMenu.addEventListener('change', (e) => {
     lineWidth = parseInt(e.target.value);
-    switchToPenMode();
+    setMode('pen');
 });
 
 
@@ -1190,20 +1128,19 @@ lineWidthMenu.addEventListener('change', (e) => {
 document.addEventListener('keydown', checkKeydown);
 
 function checkKeydown(e) {
-    //console.log(e.key);
     const c = e.key.toLowerCase();
     switch(c) {
         // delete icon
         case 'f':
-            switchToDelIconMode();
+            setMode('del');
             break;
         // move icon
         case 'i':
-            switchToMoveIconMode();
+            setMode('icon');
             break;
         // move map
         case 'm':
-            switchToMoveMapMode();
+            setMode('map');
             break;
         // clear icons
         case 'x':
@@ -1215,11 +1152,11 @@ function checkKeydown(e) {
             break;
         // draw
         case 'd':
-            switchToPenMode();
+            setMode('pen');
             break;
         // eraser
         case 'e':
-            switchToEraserMode();
+            setMode('eraser');
             break;
         // undo
         case 'z':
@@ -1227,7 +1164,7 @@ function checkKeydown(e) {
             break;
         // select
         case 's':
-            switchToSelectMode();
+            setMode('select');
             break;
         default:
             break;
@@ -1244,12 +1181,11 @@ function toggleIconMenu() {
 const iconMenuButton = document.getElementById("toggleIconMenu")
 iconMenuButton.addEventListener("click", toggleIconMenu);
 
-// tassfasdas
-// Simple color picker logic
+// simple color picker logic
 const currentColor = document.getElementById('currentColor');
 const colorOptions = document.getElementById('colorOptions');
 
-// Toggle menu on button click
+// toggle menu on button click
 currentColor.addEventListener('click', function() {
     if (colorOptions.style.display === 'block') {
         colorOptions.style.display = 'none';
@@ -1258,18 +1194,18 @@ currentColor.addEventListener('click', function() {
     }
 });
 
-// Change color on selection
+// change color on selection
 colorOptions.addEventListener('click', function(e) {
     if (e.target.classList.contains('color-option')) {
         const color = e.target.dataset.color;
         currentColor.style.backgroundColor = color;
         colorOptions.style.display = 'none';
         lineColor = color;
-        switchToPenMode();
+        setMode('pen');
     }
 });
 
-// Hide when clicking outside
+// hide when clicking outside
 document.addEventListener('click', function(e) {
     if (!currentColor.contains(e.target) && !colorOptions.contains(e.target)) {
         colorOptions.style.display = 'none';
@@ -1281,4 +1217,4 @@ document.addEventListener('click', function(e) {
 bgImage.onload = () => {
     resizeCanvas();
 };
-switchToPenMode();
+setMode('pen');
