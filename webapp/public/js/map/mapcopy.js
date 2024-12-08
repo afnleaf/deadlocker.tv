@@ -24,19 +24,19 @@ const CONFIG = {
 
 const APP = {
     currentMode: CONFIG.DEFAULT_MODE,
+    zoom: {
+        level: CONFIG.DEFAULT_ZOOM,
+        mapOffsetX: 0,
+        mapOffsetY: 0,
+        isZooming: false,
+        timeout: null,
+    },
 }
 
 const bgImage = new Image();
-// zoom
-let zoomLevel = CONFIG.DEFAULT_ZOOM;
-let mapOffsetX = 0;
-let mapOffsetY = 0;
 // perf
-let isZooming = false;
-let zoomTimeout = null;
 let cachedCanvas = document.createElement('canvas');
 let cachedCtx = cachedCanvas.getContext('2d');
-let lastZoomLevel = zoomLevel;
 let pathSimplificationThreshold = 2;
 // move map
 let isDraggingMap = false;
@@ -97,7 +97,7 @@ function resizeCanvas() {
 }
 
 function updateMapPosition() {
-    const transform = `translate3d(${mapOffsetX}px, ${mapOffsetY}px, 0) scale(${zoomLevel})`;
+    const transform = `translate3d(${APP.zoom.mapOffsetX}px, ${APP.zoom.mapOffsetY}px, 0) scale(${APP.zoom.level})`;
     DOM.mapCanvas.style.transform = transform;
     DOM.iconLayer.style.transform = transform;
     DOM.drawingCanvas.style.transform = transform;
@@ -153,27 +153,27 @@ function handleWheelZoom(e) {
     const [mouseX, mouseY] = getEventPos(DOM.mapCanvas, e);
 
     // mouse pos relative to map content
-    const mapMouseX = (mouseX - mapOffsetX) / zoomLevel;
-    const mapMouseY = (mouseY - mapOffsetY) / zoomLevel;
+    const mapMouseX = (mouseX - APP.zoom.mapOffsetX) / APP.zoom.level;
+    const mapMouseY = (mouseY - APP.zoom.mapOffsetY) / APP.zoom.level;
 
     const delta = Math.sign(e.deltaY);
     const zoomFactor = 0.02;
 
     //const prevZoom = zoomLevel;
-    zoomLevel = Math.max(CONFIG.MIN_ZOOM, Math.min(CONFIG.MAX_ZOOM, zoomLevel - delta * zoomFactor));
+    APP.zoom.level = Math.max(CONFIG.MIN_ZOOM, Math.min(CONFIG.MAX_ZOOM, APP.zoom.level - delta * zoomFactor));
 
-    mapOffsetX = mouseX - mapMouseX * zoomLevel;
-    mapOffsetY = mouseY - mapMouseY * zoomLevel;
+    APP.zoom.mapOffsetX = mouseX - mapMouseX * APP.zoom.level;
+    APP.zoom.mapOffsetY = mouseY - mapMouseY * APP.zoom.level;
 
     // set zooming flag and clear any existing timeout
-    isZooming = true;
-    if (zoomTimeout) {
-        clearTimeout(zoomTimeout);
+    APP.zoom.isZooming = true;
+    if (APP.zoom.timeout) {
+        clearTimeout(APP.zoom.timeout);
     }
 
     // set a timeout to update with full quality after zooming stops
-    zoomTimeout = setTimeout(() => {
-        isZooming = false;
+    APP.zoom.timeout = setTimeout(() => {
+        APP.zoom.isZooming = false;
         redrawCanvas();
     }, 150);
 
@@ -213,13 +213,13 @@ function handleTouchZoom(e) {
     const rect = DOM.container.getBoundingClientRect();
     const normalizedX = (midX - rect.left) / rect.width;
     const normalizedY = (midY - rect.top) / rect.height; 
-    const mapMouseX = (normalizedX - mapOffsetX) / zoomLevel;
-    const mapMouseY = (normalizedY - mapOffsetY) / zoomLevel;
-    const prevZoom = zoomLevel;
-    zoomLevel = Math.max(CONFIG.MIN_ZOOM, Math.min(CONFIG.MAX_ZOOM, prevZoom * zoomFactor));
+    const mapMouseX = (normalizedX - APP.zoom.mapOffsetX) / APP.zoom.level;
+    const mapMouseY = (normalizedY - APP.zoom.mapOffsetY) / APP.zoom.level;
+    const prevZoom = APP.zoom.level;
+    APP.zoom.level = Math.max(CONFIG.MIN_ZOOM, Math.min(CONFIG.MAX_ZOOM, prevZoom * zoomFactor));
     //zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel - zoomFactor * zoomDamp));
-    mapOffsetX = normalizedX - mapMouseX * zoomLevel;
-    mapOffsetY = normalizedY - mapMouseY * zoomLevel;
+    APP.zoom.mapOffsetX = normalizedX - mapMouseX * APP.zoom.level;
+    APP.zoom.mapOffsetY = normalizedY - mapMouseY * APP.zoom.level;
     
     resizeCanvas();
     updateIconScales();
@@ -262,8 +262,8 @@ function dragMap(e) {
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
     const deltaX = clientX - lastMouseX;
     const deltaY = clientY - lastMouseY;
-    mapOffsetX += deltaX;
-    mapOffsetY += deltaY;
+    APP.zoom.mapOffsetX += deltaX;
+    APP.zoom.mapOffsetY += deltaY;
     lastMouseX = clientX;
     lastMouseY = clientY;
     resizeCanvas();
@@ -302,7 +302,7 @@ function addIcon(iconName, side, x = 0.5, y = 0.5) {
     icon.style.top = `${mapY - CONFIG.BASE_ICON_SIZE}px`; 
     icon.style.width = `${CONFIG.BASE_ICON_SIZE}px`;
     icon.style.height = `${CONFIG.BASE_ICON_SIZE}px`;
-    icon.style.transform = `scale(${1 / zoomLevel})`;
+    icon.style.transform = `scale(${1 / APP.zoom.level})`;
     icon.style.transformOrigin = 'top left';
     //icon.style.transformOrigin = 'center';
     // team style
@@ -373,8 +373,8 @@ function startDraggingIcon(e) {
     const iconLeft = parseInt(draggedIcon.style.left);
     const iconTop = parseInt(draggedIcon.style.top);
 
-    draggedIcon.dataset.offsetX = (clientX - rect.left) / zoomLevel - iconLeft;
-    draggedIcon.dataset.offsetY = (clientY - rect.top) / zoomLevel - iconTop;
+    draggedIcon.dataset.offsetX = (clientX - rect.left) / APP.zoom.level - iconLeft;
+    draggedIcon.dataset.offsetY = (clientY - rect.top) / APP.zoom.level - iconTop;
     
     draggedIcon.style.cursor = 'grabbing';
 }
@@ -407,8 +407,8 @@ function dragIcon(e) {
         return;
     }
 
-    let newX = (clientX - rect.left) / zoomLevel - parseInt(draggedIcon.dataset.offsetX);
-    let newY = (clientY - rect.top) / zoomLevel - parseInt(draggedIcon.dataset.offsetY);
+    let newX = (clientX - rect.left) / APP.zoom.level - parseInt(draggedIcon.dataset.offsetX);
+    let newY = (clientY - rect.top) / APP.zoom.level - parseInt(draggedIcon.dataset.offsetY);
 
     // constrain the icon within the DOM.iconLayer bounds
     newX = Math.max(0, Math.min(newX, DOM.iconLayer.width - CONFIG.BASE_ICON_SIZE));
@@ -532,7 +532,7 @@ DOM.container.addEventListener('drop', (e) => {
 
 function updateIconScales() {
     icons.forEach(icon => {
-        icon.style.transform = `scale(${1 / zoomLevel})`;
+        icon.style.transform = `scale(${1 / APP.zoom.level})`;
     });
 }
 
@@ -541,7 +541,7 @@ function updateIconScales() {
 function redrawCanvas() {
     DOM.drawCtx.clearRect(0, 0, DOM.drawingCanvas.width, DOM.drawingCanvas.height);
     
-    const threshold = isZooming ? pathSimplificationThreshold / zoomLevel : 0;
+    const threshold = APP.zoom.isZooming ? pathSimplificationThreshold / APP.zoom.level : 0;
 
     [...paths, currentPath].filter(Boolean).forEach(path => {
         const simplifiedPath = threshold > 0 ? simplifyPath(path, threshold) : path;
@@ -557,7 +557,7 @@ function redrawCanvas() {
             }
         });
         DOM.drawCtx.strokeStyle = path.color;
-        DOM.drawCtx.lineWidth = path.width * zoomLevel;
+        DOM.drawCtx.lineWidth = path.width * APP.zoom.level;
         DOM.drawCtx.globalAlpha = path.penType === 'highlighter' ? 0.5 : 1;
         DOM.drawCtx.lineCap = 'round';
         DOM.drawCtx.lineJoin = 'round';
@@ -581,7 +581,7 @@ function draw(e) {
             DOM.drawCtx.moveTo(lastTwo[0].x * DOM.drawingCanvas.width, lastTwo[0].y * DOM.drawingCanvas.height);
             DOM.drawCtx.lineTo(lastTwo[1].x * DOM.drawingCanvas.width, lastTwo[1].y * DOM.drawingCanvas.height);
             DOM.drawCtx.strokeStyle = currentPath.color;
-            DOM.drawCtx.lineWidth = currentPath.width * zoomLevel;
+            DOM.drawCtx.lineWidth = currentPath.width * APP.zoom.level;
             DOM.drawCtx.globalAlpha = currentPath.penType === 'highlighter' ? 0.5 : 1;
             DOM.drawCtx.lineCap = 'round';
             DOM.drawCtx.lineJoin = 'round';
@@ -677,7 +677,7 @@ function stopDrawing() {
 
 function eraseAtPoint(x, y) {
     const isTouchDevice = 'ontouchstart' in window;
-    let baseRadius = (lineWidth * zoomLevel) / (2 * DOM.drawingCanvas.width);
+    let baseRadius = (lineWidth * APP.zoom.level) / (2 * DOM.drawingCanvas.width);
     const eraserRadius = isTouchDevice ? baseRadius * 1.5 : baseRadius;
     paths = paths.filter(path => !isPathNearPoint(path, x, y, eraserRadius));
     redrawCanvas();
@@ -810,8 +810,8 @@ function moveGroup(e) {
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
 
-    const dx = ((clientX - groupDragStart.x) / zoomLevel);
-    const dy = ((clientY - groupDragStart.y) / zoomLevel);
+    const dx = ((clientX - groupDragStart.x) / APP.zoom.level);
+    const dy = ((clientY - groupDragStart.y) / APP.zoom.level);
 
     selectedIcons.forEach(icon => {
         const offset = groupOffsets.get(icon);
