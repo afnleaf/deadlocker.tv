@@ -33,6 +33,8 @@ const APP = {
     },
 }
 
+
+
 const bgImage = new Image();
 // perf
 let cachedCanvas = document.createElement('canvas');
