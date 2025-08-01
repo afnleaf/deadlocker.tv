@@ -422,7 +422,7 @@ function dragIcon(e) {
 }
 
 const iconSelect = document.getElementById('iconSelect');
-const iconNames = ['Abrams', 'Bebop', 'Dynamo', 'GreyTalon', 'Haze', 'Infernus', 'Ivy', 'Kelvin', 'LadyGeist', 'Lash', 'McGinnis', 'Mirage', 'Mo&Krill', 'Paradox', 'Pocket', 'Seven', 'Shiv', 'Vindicta', 'Viscous', 'Warden', 'Wraith', 'Yamato'];
+const iconNames = ['Abrams', 'Bebop', 'Calico', 'Dynamo', 'Fathom', 'GreyTalon', 'Haze', 'Infernus', 'Ivy', 'Kelvin', 'LadyGeist', 'Lash', 'McGinnis', 'Mirage', 'Mo&Krill', 'Paradox', 'Pocket', 'Raven', 'Seven', 'Shiv', 'Sinclair', 'Trapper', 'Vindicta', 'Viscous', 'Vyper', 'Warden', 'Wraith', 'Wrecker', 'Yamato'];
 iconNames.forEach(iconName => {
     const draggableIcon = createDraggableIcon(iconName);
     iconSelect.appendChild(draggableIcon);
@@ -432,6 +432,8 @@ function createDraggableIcon(iconName) {
     const icon = document.createElement('img');
     //icon.src = `/public/images/hero_icons/${iconName}.png`;
     icon.src = `/public/images/hero_icons/default/${iconName}.png`;
+    icon.alt = iconName;
+    icon.title = iconName;
     icon.className = 'menu-icon';
     icon.style.width = '24px';
     icon.style.height = '24px';

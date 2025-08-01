@@ -7,7 +7,7 @@ Live | Resources | Map | Charts | Commands | __________ ==
 
 A map for teams to draw up strategies on.
 Features:
-- [ ] All new heroes icons
+- [x] All new heroes icons
 - [x] Draw Function, different colours, thickness
 - [x] Eraser/Clear
 - [x] Hero icons that can be moved around, amber/sapphire

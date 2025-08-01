@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   web:
     build:
       context: ./webapp
     ports:
-      - "4444:4444"
+      - "127.0.0.1:4444:4444"
     volumes:
       - ./webapp/public:/app/public
     environment:
