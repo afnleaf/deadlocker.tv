@@ -8,25 +8,31 @@ FROM golang:1.23-alpine AS build
 RUN apk add --no-cache git build-base
 
 # templ install
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
+#RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/a-h/templ/cmd/templ@v0.2.778
 # set the workdir within the container
 WORKDIR /app
 
 # copy go mod files and download dependencies
 COPY go.mod go.sum ./
-RUN go mod download && go mod tidy
+RUN go mod download
 
+#&& go mod tidy
 # copy the code
 COPY . .
 
 
 # generate Go code from templ files and clean up
-RUN templ generate
-RUN go mod tidy
+#RUN templ generate 
+RUN templ generate && \
+    go mod tidy && \
+    go mod download && \
+    go build -o main ./cmd/server
 
+#RUN go mod tidy
+#RUN go mod download
 # build the Go app
-RUN go build -o main ./cmd/server
+#RUN go build -o main ./cmd/server
 
 # # # # # # # # # # # # # # # # # # # # # # # # # #
 # 2: create smaller image that will run the webserver
