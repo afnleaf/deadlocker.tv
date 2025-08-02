@@ -4,36 +4,41 @@
 // unit base value
 //const trooper_base0 = 76;
 //const trooper_base10 = 104;
-const trooper_base0 = 75;
+//const trooper_base0 = 75;
+const trooper_base = 120;
 //const trooper_base10 = 90;
-const sjungle_base = 42;
-const mjungle_base = 84;
-const ljungle_base = 210;
-const sinners_base = 330;
+const sjungle_base = 44;
+const mjungle_base = 73;
+const ljungle_base = 180;
+const sinners_base = 270;
 // unit scale
+const trooper_scale = 1.5;
 const trooper_scale0 = 1.1; 
 const trooper_scale5 = 1.0; 
 //const trooper_scale10 = 1.24;
-const sjungle_scale = 0.528;
-const mjungle_scale = 1.06;
-const ljungle_scale = 2.64;
-const sinners_scale = 3.96;
+const sjungle_scale = 0.47;
+const mjungle_scale = 0.79;
+const ljungle_scale = 1.94;
+const sinners_scale = 2.92;
 // base value objectives
-const guardians_base = 175;
+const guard_base = 1000;
+const base_guard_base = 750;
 const guardians_orbs = 100;
 //const guardians_team = 1375;
-const walkers_base = 500;
+const walkers_base = 3500;
 const walkers_orbs = 250;
 //const walkers_team = 3750;
 const shrines_base = 500;
 //const shrines_team = 3000;
-const urn_base = 4025;
+const urn_base = 700;
+// urn scale per minute
+const urn_scale = 230; 
 const urn_increase = 1150;
 const urn_carrier_scale = 1.25;
-const crate_base = 36;
-const crate_scale = 3;
-const kill_base = 175;
-const kill_scale = 31.67;
+const crate_base = 23;
+const crate_scale = 2.6;
+const kill_base = 250;
+const kill_scale = 48.75;
 // spawn times
 const spawn_small = 2;
 const spawn_medium = 5;
@@ -51,7 +56,8 @@ function calcTrooper(x) {
     const increment = Math.floor((x - 10) / 5);
     return base + (scale) + (trooper_scale5 * increment);
     */
-    return trooper_base0 + trooper_scale0 * x;
+    //return trooper_base0 + trooper_scale0 * x;
+    return trooper_base + (trooper_scale * x);
 }
 
 function calcSmallJungle(x) {
@@ -82,7 +88,8 @@ function calcKill(x) {
 
 // objectives
 function calcGuardian() {
-    return ((guardians_base + guardians_orbs) * 6);
+    //return ((guard_base + guardians_orbs) * 6);
+    return guard_base;
 }
 
 function calcGuardianDeny() {
@@ -100,8 +107,11 @@ function calcWalkerDeny() {
 // urn
 function calcUrn(x) {
     if(x < spawn_urn) return NaN;
+    /*
     const increment = Math.floor((x - 10) / 5);
     return (urn_base + (urn_increase * increment));
+    */
+    return urn_base + (urn_scale * x);
 }
 
 // combined units

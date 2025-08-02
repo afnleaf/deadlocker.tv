@@ -1,11 +1,14 @@
-# Deadlocker.tv
-A community website linking to and hosting deadlock web apps and tools. Featuring a twitch stream embedded into the homepage.
+# [Deadlocker.tv](https://deadlocker.tv)
+A community website linking to and hosting deadlock web apps and tools. Featuring a twitch stream embedded into the homepage. Hosted at [deadlocker.tv](https://deadlocker.tv)
 
-Live | Resources | Map | Charts | Commands | __________ == 
+## Tools
 
 ### [Tactical Map](https://deadlocker.tv/map)
 
-A map for teams to draw up strategies on.
+<img src="deadlockertv_map.png" width="759" height="469">
+
+A map for competitive teams to draw up strategies on. Useful for players, coaches, analysts and broadcasters.
+
 Features:
 - [x] All new heroes icons
 - [x] Draw Function, different colours, thickness
@@ -14,8 +17,8 @@ Features:
 - [x] Undo
 - [x] Keybinds for buttons
 - [x] Icon drag and drop in
-- [ ] multi icon move?
-- [ ] add text
+- [x] Multi icon move
+- [ ] Text tool
 - [ ] Redo
 - [ ] Lines?
 - [ ] SVG Layers, base map, camps, objectives, names of areas
@@ -23,13 +26,15 @@ Features:
 - [ ] Private rooms where teams can draw together
 
 ### [Farm Graph](https://deadlocker.tv/farm)
-A chart mapping soul values for each entity given a point in time.
+A chart mapping soul values for each entity given a point in time. Useful for determining which resources are most efficient to farm.
 
 ### Commands
 A bunch of useful commands to use in the dev console.
 
+<!---
 ### Camps
 Explain what the names of the camps are
+--->
 
 ### iframe
 
